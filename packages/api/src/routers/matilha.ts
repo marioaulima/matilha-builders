@@ -10,10 +10,12 @@ import { pickSpotlightId } from "../lib/feed";
 import { computeNextStreak } from "../lib/streak";
 
 const founderColumns = {
+	avatarUrl: founderProfile.avatarUrl,
 	lastCheckInAt: founderProfile.lastCheckInAt,
 	link: founderProfile.link,
 	name: user.name,
 	product: founderProfile.product,
+	productImageUrl: founderProfile.productImageUrl,
 	status: founderProfile.status,
 	streak: founderProfile.streak,
 	userId: founderProfile.userId,
@@ -69,6 +71,7 @@ export const matilhaRouter = {
 		listFeed: protectedProcedure.handler(async () => {
 			const rows = await db
 				.select({
+					avatarUrl: founderProfile.avatarUrl,
 					blocked: checkIn.blocked,
 					createdAt: checkIn.createdAt,
 					founderId: checkIn.founderId,

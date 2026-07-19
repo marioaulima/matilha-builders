@@ -10,10 +10,12 @@ export const founderStatusEnum = pgEnum("founder_status", [
 ]);
 
 export const founderProfile = pgTable("founder_profile", {
+	avatarUrl: text("avatar_url"),
 	createdAt: timestamp("created_at").defaultNow().notNull(),
 	lastCheckInAt: timestamp("last_check_in_at"),
 	link: text("link"),
 	product: text("product").notNull(),
+	productImageUrl: text("product_image_url"),
 	status: founderStatusEnum("status").default("validating").notNull(),
 	streak: integer("streak").default(0).notNull(),
 	updatedAt: timestamp("updated_at")

@@ -1,9 +1,17 @@
 <script lang="ts">
+	import { createQuery } from "@tanstack/svelte-query";
 	import { goto } from "$app/navigation";
 	import { authClient } from "$lib/auth-client";
+	import Avatar from "$lib/components/matilha/Avatar.svelte";
 	import { Button } from "$lib/components/ui/button/index.js";
+	import { orpc } from "$lib/orpc";
 
 	const sessionQuery = authClient.useSession();
+	const currentUserId = $derived($sessionQuery.data?.user.id ?? "");
+	const founderQuery = createQuery(() => ({
+		...orpc.founders.get.queryOptions({ input: { founderId: currentUserId } }),
+		enabled: !!currentUserId,
+	}));
 
 	async function handleSignOut() {
 		await authClient.signOut({
@@ -23,12 +31,11 @@
 	{:else if $sessionQuery.data?.user}
 		{@const currentUser = $sessionQuery.data.user}
 		<div class="flex items-center gap-3">
-			<a
-				class="flex size-7 items-center justify-center rounded-full bg-secondary text-xs font-semibold text-secondary-foreground"
-				href={`/profile/${currentUser.id}`}
-				title={currentUser.name}
-			>
-				{(currentUser.name || currentUser.email || "?").charAt(0).toUpperCase()}
+			<a href={`/profile/${currentUser.id}`} title={currentUser.name}>
+				<Avatar
+					name={currentUser.name || currentUser.email || "?"}
+					src={founderQuery.data?.avatarUrl}
+				/>
 			</a>
 			<Button onclick={handleSignOut} size="sm" variant="ghost">Sair</Button>
 		</div>

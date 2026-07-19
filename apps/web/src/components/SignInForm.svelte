@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { createForm } from "@tanstack/svelte-form";
 	import { motion } from "@humanspeak/svelte-motion";
+	import { createForm } from "@tanstack/svelte-form";
 	import { z } from "zod";
 	import { goto } from "$app/navigation";
 	import { authClient } from "$lib/auth-client";

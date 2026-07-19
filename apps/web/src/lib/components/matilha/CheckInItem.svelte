@@ -2,6 +2,7 @@
 	import { motion } from "@humanspeak/svelte-motion";
 	import { formatRelative } from "$lib/format";
 	import { cn } from "$lib/utils.js";
+	import Avatar from "./Avatar.svelte";
 
 	type CheckIn = {
 		id: string;
@@ -12,6 +13,7 @@
 		help: string | null;
 		createdAt: string | Date;
 		featured?: boolean;
+		avatarUrl?: string | null;
 	};
 
 	let {
@@ -25,11 +27,9 @@
 	animate={{ opacity: 1, y: 0 }}
 	class={cn("rounded-lg border bg-card p-4", checkIn.featured ? "border-streak" : "border-border")}
 	initial={{ opacity: 0, y: 6 }}
-	transition={
-		checkIn.featured
+	transition={checkIn.featured
 			? { duration: 0.3, ease: [0.23, 1, 0.32, 1] }
-			: { delay: index * 0.04, duration: 0.2, ease: [0.23, 1, 0.32, 1] }
-	}
+			: { delay: index * 0.04, duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
 >
 	{#if checkIn.featured}
 		<div class="mb-2 font-mono text-[11px] text-streak">
@@ -38,7 +38,8 @@
 	{/if}
 	<div class="mb-2.5 flex items-baseline justify-between">
 		{#if showAuthor}
-			<span class="text-sm font-semibold">
+			<span class="flex items-center gap-2 text-sm font-semibold">
+				<Avatar name={checkIn.name} size="sm" src={checkIn.avatarUrl} />
 				{checkIn.name}
 				<span class="font-normal text-muted-foreground">
 					· {checkIn.product}</span

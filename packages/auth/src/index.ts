@@ -30,6 +30,8 @@ export function createAuth() {
 			enabled: true,
 		},
 		plugins: [],
+		secret: env.BETTER_AUTH_SECRET,
+		trustedOrigins: [env.CORS_ORIGIN],
 		user: {
 			additionalFields: {
 				approvalStatus: {
@@ -44,8 +46,6 @@ export function createAuth() {
 				},
 			},
 		},
-		secret: env.BETTER_AUTH_SECRET,
-		trustedOrigins: [env.CORS_ORIGIN],
 	});
 }
 

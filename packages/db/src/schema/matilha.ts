@@ -75,7 +75,7 @@ export const checkIn = pgTable("check_in", {
 		.primaryKey()
 		.$defaultFn(() => crypto.randomUUID()),
 	productId: text("product_id").references(() => product.id, {
-		onDelete: "set null",
+		onDelete: "cascade",
 	}),
 	progress: text("progress").notNull(),
 });

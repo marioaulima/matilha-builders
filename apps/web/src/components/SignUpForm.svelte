@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { motion } from "@humanspeak/svelte-motion";
-	import { createMutation } from "@tanstack/svelte-query";
 	import { createForm } from "@tanstack/svelte-form";
+	import { createMutation } from "@tanstack/svelte-query";
 	import { z } from "zod";
 	import { goto } from "$app/navigation";
 	import { authClient } from "$lib/auth-client";

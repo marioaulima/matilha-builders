@@ -1,6 +1,7 @@
 import type { RouterClient } from "@orpc/server";
 
 import { protectedProcedure, publicProcedure } from "../index";
+import { adminRouter } from "./admin";
 import { matilhaRouter } from "./matilha";
 
 export const appRouter = {
@@ -10,6 +11,7 @@ export const appRouter = {
 		user: context.session?.user,
 	})),
 	...matilhaRouter,
+	...adminRouter,
 };
 export type AppRouter = typeof appRouter;
 export type AppRouterClient = RouterClient<typeof appRouter>;

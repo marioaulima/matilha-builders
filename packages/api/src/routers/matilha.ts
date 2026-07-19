@@ -178,6 +178,21 @@ export const matilhaRouter = {
 					.where(eq(founder.userId, founderId));
 				return { bio: input.bio || null };
 			}),
+		updateSignupDetails: protectedProcedure
+			.input(
+				z.object({
+					interest: z.enum(["running", "building", "observing"]),
+					phone: z.string().min(1),
+				})
+			)
+			.handler(async ({ input, context }) => {
+				const founderId = context.session.user.id;
+				await db
+					.update(founder)
+					.set({ interest: input.interest, phone: input.phone })
+					.where(eq(founder.userId, founderId));
+				return { interest: input.interest, phone: input.phone };
+			}),
 	},
 	products: {
 		create: protectedProcedure

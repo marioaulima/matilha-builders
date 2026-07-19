@@ -14,9 +14,9 @@
 	} = $props();
 
 	const sizeClasses = {
-		sm: "size-5 text-[10px]",
-		md: "size-7 text-xs",
 		lg: "size-16 text-xl",
+		md: "size-7 text-xs",
+		sm: "size-5 text-[10px]",
 	};
 
 	const initial = $derived((name || "?").charAt(0).toUpperCase());
@@ -27,7 +27,7 @@
 		alt={name}
 		class={cn("rounded-full object-cover", sizeClasses[size], className)}
 		{src}
-	/>
+	>
 {:else}
 	<span
 		class={cn(

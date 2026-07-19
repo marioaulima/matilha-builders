@@ -29,10 +29,10 @@ export const env = createEnv({
 		BETTER_AUTH_URL: z.url(),
 		CORS_ORIGIN: z.url(),
 		DATABASE_URL: z.string().min(1),
-		UPLOADTHING_TOKEN: z.string().min(1),
 		NODE_ENV: z
 			.enum(["development", "production", "test"])
 			.default("development"),
+		UPLOADTHING_TOKEN: z.string().min(1),
 	},
 	skipValidation: !!process.env.SKIP_ENV_VALIDATION,
 });

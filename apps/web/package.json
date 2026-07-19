@@ -16,7 +16,6 @@
     "@fontsource-variable/inter": "^5.2.8",
     "@fontsource-variable/jetbrains-mono": "^5.2.8",
     "@humanspeak/svelte-motion": "^0.7.19",
-    "@lucide/svelte": "^1.25.0",
     "@matilha-builders/api": "workspace:*",
     "@matilha-builders/auth": "workspace:*",
     "@matilha-builders/db": "workspace:*",
@@ -41,6 +40,7 @@
   },
   "devDependencies": {
     "@internationalized/date": "^3.12.2",
+    "@lucide/svelte": "^1.25.0",
     "@matilha-builders/config": "workspace:*",
     "@sveltejs/adapter-auto": "^7.0.1",
     "@sveltejs/adapter-vercel": "^6.3.4",

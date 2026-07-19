@@ -5,29 +5,30 @@ import { createTanstackQueryUtils } from "@orpc/tanstack-query";
 import { QueryCache, QueryClient } from "@tanstack/svelte-query";
 
 export const queryClient = new QueryClient({
-  queryCache: new QueryCache({
-    onError: (error) => {
-      console.error(`Error: ${error.message}`);
-    },
-  }),
+	queryCache: new QueryCache({
+		onError: (error) => {
+			console.error(`Error: ${error.message}`);
+		},
+	}),
 });
 
 export const link = new RPCLink({
-  url: () => {
-    if (typeof window === "undefined") {
-      throw new Error("This link is not allowed on the server side.");
-    }
+	fetch(url, options) {
+		return fetch(url, {
+			...options,
+			credentials: "include",
+		});
+	},
+	url: () => {
+		if (typeof window === "undefined") {
+			throw new Error("This link is not allowed on the server side.");
+		}
 
-    return `${window.location.origin}/rpc`;
-  },
-  fetch(url, options) {
-    return fetch(url, {
-      ...options,
-      credentials: "include",
-    });
-  },
+		return `${window.location.origin}/rpc`;
+	},
 });
 
-export const client: AppRouterClient = globalThis.$client ?? createORPCClient(link);
+export const client: AppRouterClient =
+	globalThis.$client ?? createORPCClient(link);
 
 export const orpc = createTanstackQueryUtils(client);

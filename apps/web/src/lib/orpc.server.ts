@@ -1,19 +1,22 @@
-import { getRequestEvent } from "$app/server";
 import { createContext } from "@matilha-builders/api/context";
-import { appRouter, type AppRouterClient } from "@matilha-builders/api/routers/index";
+import {
+	type AppRouterClient,
+	appRouter,
+} from "@matilha-builders/api/routers/index";
 import { createRouterClient } from "@orpc/server";
+import { getRequestEvent } from "$app/server";
 
 if (typeof window !== "undefined") {
-  throw new Error("This file should only be imported on the server.");
+	throw new Error("This file should only be imported on the server.");
 }
 
 const serverClient: AppRouterClient = createRouterClient(appRouter, {
-  context: async () => {
-    const event = getRequestEvent();
-    return createContext({
-      headers: event.request.headers,
-    });
-  },
+	context: async () => {
+		const event = getRequestEvent();
+		return createContext({
+			headers: event.request.headers,
+		});
+	},
 });
 
 // oRPC's SvelteKit SSR setup loads this from hooks.server.ts so $lib/orpc can

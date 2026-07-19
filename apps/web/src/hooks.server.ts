@@ -1,16 +1,16 @@
 import "./lib/orpc.server";
-import { building } from "$app/environment";
 import { auth } from "@matilha-builders/auth";
 import type { Handle } from "@sveltejs/kit";
 import { svelteKitHandler } from "better-auth/svelte-kit";
+import { building } from "$app/environment";
 
 export const handle: Handle = async ({ event, resolve }) => {
-  const authInstance = auth;
+	const authInstance = auth;
 
-  return svelteKitHandler({
-    event,
-    resolve,
-    auth: authInstance,
-    building,
-  });
+	return svelteKitHandler({
+		auth: authInstance,
+		building,
+		event,
+		resolve,
+	});
 };

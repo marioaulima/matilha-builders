@@ -18,6 +18,7 @@ export const productStatusEnum = pgEnum("product_status", [
 
 export const founder = pgTable("founder", {
 	avatarUrl: text("avatar_url"),
+	bio: text("bio"),
 	createdAt: timestamp("created_at").defaultNow().notNull(),
 	featuredProductId: text("featured_product_id").references(
 		(): AnyPgColumn => product.id,

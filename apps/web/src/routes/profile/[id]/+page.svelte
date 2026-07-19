@@ -20,6 +20,7 @@
 	import StreakBadge from "$lib/components/matilha/StreakBadge.svelte";
 	import { Button } from "$lib/components/ui/button/index.js";
 	import { Card } from "$lib/components/ui/card/index.js";
+	import * as Drawer from "$lib/components/ui/drawer/index.js";
 	import { Input } from "$lib/components/ui/input/index.js";
 	import * as Select from "$lib/components/ui/select/index.js";
 	import { Textarea } from "$lib/components/ui/textarea/index.js";
@@ -153,6 +154,33 @@
 		validators: { onSubmit: productSchema },
 	}));
 
+	const profileSchema = z.object({
+		bio: z.string(),
+		name: z.string().min(1, "Nome é obrigatório"),
+	});
+
+	let showEditProfile = $state(false);
+
+	const updateBio = createMutation(() => ({
+		...orpc.founders.updateBio.mutationOptions(),
+	}));
+
+	const profileForm = createForm(() => ({
+		defaultValues: { bio: "", name: "" },
+		onSubmit: async ({ value }) => {
+			await authClient.updateUser({ name: value.name });
+			await updateBio.mutateAsync({ bio: value.bio });
+			showEditProfile = false;
+			refetchFounder();
+		},
+		validators: { onSubmit: profileSchema },
+	}));
+
+	function openEditProfile(name: string, bio: string | null) {
+		profileForm.reset({ bio: bio ?? "", name });
+		showEditProfile = true;
+	}
+
 	let confirmDeleteId = $state<string | null>(null);
 
 	const deleteProduct = createMutation(() => ({
@@ -172,26 +200,127 @@
 	<div class="mx-auto max-w-4xl px-4 py-6 md:px-6">
 		<div class="mb-6 flex items-start justify-between">
 			<div class="flex items-start gap-3">
-				<Avatar name={founder.name} size="lg" src={founder.avatarUrl} />
+				{#if isOwnProfile}
+					<ImageUploadButton
+						endpoint="avatarUploader"
+						label="Trocar foto de perfil"
+						onUploaded={refetchFounder}
+						overlay
+					>
+						{#snippet children()}
+							<Avatar name={founder.name} size="lg" src={founder.avatarUrl} />
+						{/snippet}
+					</ImageUploadButton>
+				{:else}
+					<Avatar name={founder.name} size="lg" src={founder.avatarUrl} />
+				{/if}
 				<div>
 					<h1 class="text-2xl font-bold">{founder.name}</h1>
 					<p class="mt-0.5 text-sm text-muted-foreground">
 						construindo há {founder.streak}
 						{founder.streak === 1 ? "semana seguida" : "semanas seguidas"}
 					</p>
+					{#if founder.bio}
+						<p class="mt-1.5 max-w-md text-sm leading-relaxed">
+							{founder.bio}
+						</p>
+					{/if}
 					{#if isOwnProfile}
 						<div class="mt-3">
-							<ImageUploadButton
-								endpoint="avatarUploader"
-								label="Trocar foto"
-								onUploaded={refetchFounder}
-							/>
+							<Button
+								onclick={() => openEditProfile(founder.name, founder.bio)}
+								size="sm"
+								variant="outline"
+							>
+								Editar perfil
+							</Button>
 						</div>
 					{/if}
 				</div>
 			</div>
 			<StreakBadge weeks={founder.streak} />
 		</div>
+
+		{#if isOwnProfile}
+			<Drawer.Root bind:open={showEditProfile}>
+				<Drawer.Content>
+					<div class="mx-auto w-full max-w-md">
+						<Drawer.Header>
+							<Drawer.Title>Editar perfil</Drawer.Title>
+						</Drawer.Header>
+						<form
+							class="flex flex-col gap-4 px-4 pb-2"
+							onsubmit={(e) => {
+								e.preventDefault();
+								e.stopPropagation();
+								profileForm.handleSubmit();
+							}}
+						>
+							<profileForm.Field name="name">
+								{#snippet children(field)}
+									<Field
+										error={field.state.meta.isTouched
+											? field.state.meta.errors[0]?.message
+											: undefined}
+										htmlFor={field.name}
+										label="Nome"
+									>
+										<Input
+											id={field.name}
+											name={field.name}
+											onblur={field.handleBlur}
+											oninput={(e: Event) =>
+												field.handleChange((e.target as HTMLInputElement).value)}
+											value={field.state.value}
+										/>
+									</Field>
+								{/snippet}
+							</profileForm.Field>
+							<profileForm.Field name="bio">
+								{#snippet children(field)}
+									<Field hint="opcional" htmlFor={field.name} label="Bio">
+										<Textarea
+											id={field.name}
+											name={field.name}
+											onblur={field.handleBlur}
+											oninput={(e: Event) =>
+												field.handleChange(
+													(e.target as HTMLTextAreaElement).value
+												)}
+											placeholder="Conta rapidinho quem você é"
+											rows={3}
+											value={field.state.value}
+										/>
+									</Field>
+								{/snippet}
+							</profileForm.Field>
+							<profileForm.Subscribe
+								selector={(state: typeof profileForm.state): SubmitState => ({
+									canSubmit: state.canSubmit,
+									isSubmitting: state.isSubmitting,
+								})}
+							>
+								{#snippet children(state: SubmitState)}
+									<Button
+										disabled={!state.canSubmit || state.isSubmitting}
+										type="submit"
+									>
+										{state.isSubmitting ? "Salvando..." : "Salvar"}
+									</Button>
+								{/snippet}
+							</profileForm.Subscribe>
+						</form>
+						<Drawer.Footer>
+							<Drawer.Close
+								class="h-9 w-full rounded-md border border-border text-sm transition-colors hover:bg-accent"
+							>
+								Cancelar
+							</Drawer.Close>
+						</Drawer.Footer>
+					</div>
+				</Drawer.Content>
+			</Drawer.Root>
+		{/if}
 
 		<section class="mb-6">
 			<div class="mb-2.5 flex items-center justify-between">

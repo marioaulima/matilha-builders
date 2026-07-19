@@ -1,0 +1,1 @@
+ALTER TABLE "founder" ADD COLUMN "bio" text;

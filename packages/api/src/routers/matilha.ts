@@ -133,6 +133,7 @@ export const matilhaRouter = {
 				}
 				return {
 					avatarUrl: row.avatarUrl,
+					bio: row.bio,
 					featuredProductId: row.featuredProductId,
 					lastCheckInAt: row.lastCheckInAt,
 					name: row.user.name,
@@ -151,6 +152,7 @@ export const matilhaRouter = {
 			});
 			return rows.map((row) => ({
 				avatarUrl: row.avatarUrl,
+				bio: row.bio,
 				featuredProductId: row.featuredProductId,
 				lastCheckInAt: row.lastCheckInAt,
 				name: row.user.name,
@@ -159,6 +161,16 @@ export const matilhaRouter = {
 				userId: row.userId,
 			}));
 		}),
+		updateBio: protectedProcedure
+			.input(z.object({ bio: z.string() }))
+			.handler(async ({ input, context }) => {
+				const founderId = context.session.user.id;
+				await db
+					.update(founder)
+					.set({ bio: input.bio || null })
+					.where(eq(founder.userId, founderId));
+				return { bio: input.bio || null };
+			}),
 		setFeaturedProduct: protectedProcedure
 			.input(z.object({ productId: z.string().nullable() }))
 			.handler(async ({ input, context }) => {

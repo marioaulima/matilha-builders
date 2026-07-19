@@ -1,6 +1,6 @@
 <script lang="ts">
-	import ExternalLinkIcon from "@lucide/svelte/icons/external-link";
 	import { motion } from "@humanspeak/svelte-motion";
+	import ExternalLinkIcon from "@lucide/svelte/icons/external-link";
 	import * as Drawer from "$lib/components/ui/drawer/index.js";
 	import { cn } from "$lib/utils.js";
 

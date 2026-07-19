@@ -580,7 +580,11 @@
 									</editProductForm.Field>
 									<editProductForm.Field name="solution">
 										{#snippet children(field)}
-											<Field hint="opcional" htmlFor={field.name} label="Solução">
+											<Field
+												hint="opcional"
+												htmlFor={field.name}
+												label="Solução"
+											>
 												<Textarea
 													id={field.name}
 													name={field.name}

@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { motion } from "@humanspeak/svelte-motion";
-	import StarIcon from "@lucide/svelte/icons/star";
 	import { formatRelative } from "$lib/format";
-	import { cn } from "$lib/utils.js";
 	import Avatar from "./Avatar.svelte";
 	import ProductChip from "./ProductChip.svelte";
 
@@ -22,7 +20,6 @@
 		blocked: string;
 		help: string | null;
 		createdAt: string | Date;
-		featured?: boolean;
 		avatarUrl?: string | null;
 	};
 
@@ -35,18 +32,10 @@
 
 <motion.div
 	animate={{ opacity: 1, y: 0 }}
-	class={cn("rounded-xl border bg-card p-4", checkIn.featured ? "border-streak" : "border-border")}
+	class="rounded-xl border border-border bg-card p-4"
 	initial={{ opacity: 0, y: 6 }}
-	transition={checkIn.featured
-			? { duration: 0.3, ease: [0.23, 1, 0.32, 1] }
-			: { delay: index * 0.04, duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+	transition={{ delay: index * 0.04, duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
 >
-	{#if checkIn.featured}
-		<div class="mb-2 flex items-center gap-1 font-mono text-[11px] text-streak">
-			<StarIcon class="size-3" fill="currentColor" />
-			spotlight da semana
-		</div>
-	{/if}
 	<div class="mb-3 flex items-center justify-between gap-3">
 		{#if showAuthor}
 			<span class="flex items-center gap-2 text-sm font-semibold">

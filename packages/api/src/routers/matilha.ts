@@ -6,7 +6,6 @@ import { z } from "zod";
 
 import { protectedProcedure } from "../index";
 import { MAX_PRODUCTS_PER_FOUNDER } from "../lib/constants";
-import { pickSpotlightId } from "../lib/feed";
 import { computeNextStreak } from "../lib/streak";
 
 async function requireOwnedProduct(productId: string, founderId: string) {
@@ -98,7 +97,7 @@ export const matilhaRouter = {
 					product: true,
 				},
 			});
-			const withStreak = rows.map((row) => ({
+			return rows.map((row) => ({
 				avatarUrl: row.founder.avatarUrl,
 				blocked: row.blocked,
 				createdAt: row.createdAt,
@@ -109,11 +108,6 @@ export const matilhaRouter = {
 				product: row.product,
 				progress: row.progress,
 				streak: row.founder.streak,
-			}));
-			const spotlightId = pickSpotlightId(withStreak, new Date());
-			return withStreak.map((row) => ({
-				...row,
-				featured: row.id === spotlightId,
 			}));
 		}),
 	},
@@ -161,16 +155,6 @@ export const matilhaRouter = {
 				userId: row.userId,
 			}));
 		}),
-		updateBio: protectedProcedure
-			.input(z.object({ bio: z.string() }))
-			.handler(async ({ input, context }) => {
-				const founderId = context.session.user.id;
-				await db
-					.update(founder)
-					.set({ bio: input.bio || null })
-					.where(eq(founder.userId, founderId));
-				return { bio: input.bio || null };
-			}),
 		setFeaturedProduct: protectedProcedure
 			.input(z.object({ productId: z.string().nullable() }))
 			.handler(async ({ input, context }) => {
@@ -183,6 +167,16 @@ export const matilhaRouter = {
 					.set({ featuredProductId: input.productId })
 					.where(eq(founder.userId, founderId));
 				return { featuredProductId: input.productId };
+			}),
+		updateBio: protectedProcedure
+			.input(z.object({ bio: z.string() }))
+			.handler(async ({ input, context }) => {
+				const founderId = context.session.user.id;
+				await db
+					.update(founder)
+					.set({ bio: input.bio || null })
+					.where(eq(founder.userId, founderId));
+				return { bio: input.bio || null };
 			}),
 	},
 	products: {

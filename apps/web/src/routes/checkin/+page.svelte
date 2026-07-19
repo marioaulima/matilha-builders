@@ -71,9 +71,7 @@
 	<div class="mx-auto max-w-4xl px-4 py-8 md:px-6">
 		<div class="mb-6 border-border border-b pb-5">
 			<h1 class="text-2xl font-bold tracking-tight">Check-in da semana</h1>
-			<p class="mt-1 text-sm text-muted-foreground">
-				Rápido e direto ao ponto
-			</p>
+			<p class="mt-1 text-sm text-muted-foreground">Rápido e direto ao ponto</p>
 		</div>
 		{#if productsQuery.isPending}
 			<Loader

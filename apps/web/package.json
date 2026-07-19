@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.2.8",
+    "@fontsource-variable/jetbrains-mono": "^5.2.8",
     "@lucide/svelte": "^1.25.0",
     "@matilha-builders/api": "workspace:*",
     "@matilha-builders/auth": "workspace:*",

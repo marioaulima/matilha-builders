@@ -47,23 +47,35 @@
 			spotlight da semana
 		</div>
 	{/if}
-	<div class="mb-2.5 flex items-center justify-between gap-2">
+	<div class="mb-3 flex items-center justify-between gap-3">
 		{#if showAuthor}
 			<span class="flex items-center gap-2 text-sm font-semibold">
 				<Avatar name={checkIn.name} size="sm" src={checkIn.avatarUrl} />
 				{checkIn.name}
 			</span>
+			<span class="flex items-center gap-2">
+				{#if checkIn.product}
+					<ProductChip product={checkIn.product} showImage={false} variant="tag" />
+				{/if}
+				<span class="font-mono text-xs text-muted-foreground"
+					>{formatRelative(checkIn.createdAt)}</span
+				>
+			</span>
 		{:else}
-			<span></span>
-		{/if}
-		<span class="flex items-center gap-2">
 			{#if checkIn.product}
-				<ProductChip product={checkIn.product} variant="tag" />
+				<ProductChip
+					product={checkIn.product}
+					showImage={false}
+					size="sm"
+					variant="tile"
+				/>
+			{:else}
+				<span></span>
 			{/if}
 			<span class="font-mono text-xs text-muted-foreground"
 				>{formatRelative(checkIn.createdAt)}</span
 			>
-		</span>
+		{/if}
 	</div>
 	<div class="flex flex-col gap-2 text-sm leading-normal">
 		<div>

@@ -73,7 +73,8 @@
 			{@const [primary, ...rest] = localProducts}
 			<ProductChip product={primary} variant="cover" />
 			{#if rest.length}
-				<div class="mt-4 flex flex-wrap gap-1.5">
+				<div class="mt-4 text-muted-foreground text-xs">Outros produtos</div>
+				<div class="mt-1.5 flex flex-wrap gap-1.5">
 					{#each rest as p (p.id)}
 						<button
 							class="cursor-pointer rounded-full transition-opacity hover:opacity-80"

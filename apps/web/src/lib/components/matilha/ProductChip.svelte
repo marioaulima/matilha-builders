@@ -17,22 +17,37 @@
 		variant = "cover",
 		size = "md",
 		showStatus = true,
+		showImage = true,
 		class: className,
 	}: {
 		product: Product;
 		variant?: "cover" | "tile" | "tag";
-		size?: "md" | "lg";
+		size?: "sm" | "md" | "lg";
 		showStatus?: boolean;
+		showImage?: boolean;
 		class?: string;
 	} = $props();
 
 	const dims = $derived(
-		variant === "tag" ? "size-6" : size === "lg" ? "size-16" : "size-12"
+		variant === "tag"
+			? "size-6"
+			: size === "lg"
+				? "size-16"
+				: size === "sm"
+					? "size-8"
+					: "size-12"
 	);
 	const radius = $derived(variant === "tag" ? "rounded-md" : "rounded-xl");
 	const initialSize = $derived(
-		variant === "tag" ? "text-xs" : size === "lg" ? "text-xl" : "text-base"
+		variant === "tag"
+			? "text-xs"
+			: size === "lg"
+				? "text-xl"
+				: size === "sm"
+					? "text-sm"
+					: "text-base"
 	);
+	const captionTextClass = $derived(size === "sm" ? "text-sm" : "text-[15px]");
 	const coverHeight = $derived(size === "lg" ? "h-56" : "h-50");
 
 	const statusLabels: Record<Status, string> = {
@@ -75,7 +90,10 @@
 	<div class="flex items-center justify-between gap-2">
 		{#if product.link}
 			<a
-				class="flex min-w-0 items-center gap-1 truncate font-semibold text-[15px] text-foreground underline decoration-muted-foreground/40 underline-offset-2 transition-colors hover:text-streak hover:decoration-streak"
+				class={cn(
+					"flex min-w-0 items-center gap-1 truncate font-semibold text-foreground underline decoration-muted-foreground/40 underline-offset-2 transition-colors hover:text-streak hover:decoration-streak",
+					captionTextClass
+				)}
 				href={product.link}
 				onclick={(e) => e.stopPropagation()}
 				rel="noreferrer"
@@ -85,7 +103,9 @@
 				<ExternalLinkIcon class="size-3.5 shrink-0" />
 			</a>
 		{:else}
-			<span class="truncate font-semibold text-[15px]">{product.name}</span>
+			<span class={cn("truncate font-semibold", captionTextClass)}
+				>{product.name}</span
+			>
 		{/if}
 		{#if product.status && showStatus}
 			<span
@@ -103,11 +123,14 @@
 {#if variant === "tag"}
 	<span
 		class={cn(
-			"inline-flex items-center gap-1.5 rounded-full border border-border bg-card/60 py-0.5 pr-2.5 pl-0.5 text-xs font-medium",
+			"inline-flex items-center gap-1.5 rounded-full border border-border bg-card/60 py-0.5 pr-2.5 text-xs font-medium",
+			showImage ? "pl-0.5" : "pl-2.5",
 			className
 		)}
 	>
-		{@render thumb()}
+		{#if showImage}
+			{@render thumb()}
+		{/if}
 		{#if product.link}
 			<a
 				class="flex items-center gap-0.5 underline decoration-muted-foreground/40 underline-offset-2 transition-colors hover:text-streak hover:decoration-streak"
@@ -133,7 +156,9 @@
 	</span>
 {:else if variant === "tile"}
 	<div class={cn("flex items-center gap-3", className)}>
-		{@render thumb()}
+		{#if showImage}
+			{@render thumb()}
+		{/if}
 		<div class="min-w-0 flex-1">
 			{@render caption()}
 		</div>

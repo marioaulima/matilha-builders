@@ -2,6 +2,7 @@
 	import PencilIcon from "@lucide/svelte/icons/pencil";
 	import StarIcon from "@lucide/svelte/icons/star";
 	import Trash2Icon from "@lucide/svelte/icons/trash-2";
+	import { MAX_PRODUCTS_PER_FOUNDER } from "@matilha-builders/api/lib/constants";
 	import { createForm } from "@tanstack/svelte-form";
 	import {
 		createMutation,
@@ -169,19 +170,30 @@
 
 		<section class="mb-6">
 			<div class="mb-2.5 flex items-center justify-between">
-				<h2 class="text-sm font-semibold text-muted-foreground">Produtos</h2>
+				<h2 class="text-sm font-semibold text-muted-foreground">
+					Produtos
+					<span class="font-normal text-muted-foreground/70">
+						({founder.products.length}/{MAX_PRODUCTS_PER_FOUNDER})
+					</span>
+				</h2>
 				{#if isOwnProfile}
-					<button
-						class="text-xs font-medium text-foreground underline underline-offset-2 hover:text-neutral-400"
-						onclick={() => (showAddProduct = !showAddProduct)}
-						type="button"
-					>
-						{showAddProduct ? "cancelar" : "+ novo produto"}
-					</button>
+					{#if founder.products.length < MAX_PRODUCTS_PER_FOUNDER}
+						<button
+							class="text-xs font-medium text-foreground underline underline-offset-2 hover:text-neutral-400"
+							onclick={() => (showAddProduct = !showAddProduct)}
+							type="button"
+						>
+							{showAddProduct ? "cancelar" : "+ novo produto"}
+						</button>
+					{:else}
+						<span class="text-xs text-muted-foreground">
+							Limite de {MAX_PRODUCTS_PER_FOUNDER} produtos atingido
+						</span>
+					{/if}
 				{/if}
 			</div>
 
-			{#if isOwnProfile && showAddProduct}
+			{#if isOwnProfile && showAddProduct && founder.products.length < MAX_PRODUCTS_PER_FOUNDER}
 				<Card class="mb-3 border border-border p-4">
 					<form
 						class="flex flex-col gap-3"
@@ -250,6 +262,11 @@
 								</Button>
 							{/snippet}
 						</addProductForm.Subscribe>
+						{#if createProduct.isError}
+							<p class="text-destructive text-xs">
+								{createProduct.error.message}
+							</p>
+						{/if}
 					</form>
 				</Card>
 			{/if}

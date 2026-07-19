@@ -5,6 +5,7 @@ import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 
 import { protectedProcedure } from "../index";
+import { MAX_PRODUCTS_PER_FOUNDER } from "../lib/constants";
 import { pickSpotlightId } from "../lib/feed";
 import { computeNextStreak } from "../lib/streak";
 
@@ -181,10 +182,20 @@ export const matilhaRouter = {
 				})
 			)
 			.handler(async ({ input, context }) => {
+				const founderId = context.session.user.id;
+				const existing = await db
+					.select({ id: product.id })
+					.from(product)
+					.where(eq(product.founderId, founderId));
+				if (existing.length >= MAX_PRODUCTS_PER_FOUNDER) {
+					throw new ORPCError("BAD_REQUEST", {
+						message: `Você já atingiu o limite de ${MAX_PRODUCTS_PER_FOUNDER} produtos.`,
+					});
+				}
 				const [row] = await db
 					.insert(product)
 					.values({
-						founderId: context.session.user.id,
+						founderId,
 						link: input.link || undefined,
 						name: input.name,
 					})

@@ -24,5 +24,5 @@ export function pickSpotlightId(
 		(a, b) =>
 			b.streak - a.streak || b.createdAt.getTime() - a.createdAt.getTime()
 	);
-	return top.id;
+	return top?.id ?? null;
 }

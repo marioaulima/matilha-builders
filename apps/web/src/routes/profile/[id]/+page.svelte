@@ -1,12 +1,26 @@
 <script lang="ts">
-	import { createQuery } from "@tanstack/svelte-query";
+	import PencilIcon from "@lucide/svelte/icons/pencil";
+	import StarIcon from "@lucide/svelte/icons/star";
+	import Trash2Icon from "@lucide/svelte/icons/trash-2";
+	import { createForm } from "@tanstack/svelte-form";
+	import {
+		createMutation,
+		createQuery,
+		useQueryClient,
+	} from "@tanstack/svelte-query";
+	import { z } from "zod";
 	import { page } from "$app/state";
 	import { authClient } from "$lib/auth-client";
 	import Avatar from "$lib/components/matilha/Avatar.svelte";
 	import CheckInItem from "$lib/components/matilha/CheckInItem.svelte";
+	import Field from "$lib/components/matilha/Field.svelte";
 	import ImageUploadButton from "$lib/components/matilha/ImageUploadButton.svelte";
-	import StatusBadge from "$lib/components/matilha/StatusBadge.svelte";
+	import ProductChip from "$lib/components/matilha/ProductChip.svelte";
 	import StreakBadge from "$lib/components/matilha/StreakBadge.svelte";
+	import { Button } from "$lib/components/ui/button/index.js";
+	import { Card } from "$lib/components/ui/card/index.js";
+	import { Input } from "$lib/components/ui/input/index.js";
+	import * as Select from "$lib/components/ui/select/index.js";
 	import { orpc } from "$lib/orpc";
 
 	const founderId = $derived(page.params.id ?? "");
@@ -18,38 +32,133 @@
 	const historyQuery = createQuery(() =>
 		orpc.checkIns.listByFounder.queryOptions({ input: { founderId } })
 	);
+
+	const queryClient = useQueryClient();
+	function refetchFounder() {
+		founderQuery.refetch();
+	}
+
+	const productSchema = z.object({
+		link: z.union([
+			z.literal(""),
+			z.url("Link precisa ser uma URL válida (ex: https://seusite.com)"),
+		]),
+		name: z.string().min(1, "Nome do produto é obrigatório"),
+	});
+
+	let showAddProduct = $state(false);
+
+	const createProduct = createMutation(() => ({
+		...orpc.products.create.mutationOptions(),
+		onSuccess: () => {
+			addProductForm.reset();
+			showAddProduct = false;
+			refetchFounder();
+			queryClient.invalidateQueries({
+				queryKey: orpc.products.mine.queryOptions().queryKey,
+			});
+		},
+	}));
+
+	const addProductForm = createForm(() => ({
+		defaultValues: { link: "", name: "" },
+		onSubmit: async ({ value }) => {
+			await createProduct.mutateAsync({ link: value.link, name: value.name });
+		},
+		validators: { onSubmit: productSchema },
+	}));
+
+	type SubmitState = Pick<
+		typeof addProductForm.state,
+		"canSubmit" | "isSubmitting"
+	>;
+
+	const updateProductStatus = createMutation(() => ({
+		...orpc.products.update.mutationOptions(),
+		onSuccess: refetchFounder,
+	}));
+
+	const setFeaturedProduct = createMutation(() => ({
+		...orpc.founders.setFeaturedProduct.mutationOptions(),
+		onSuccess: refetchFounder,
+	}));
+
+	function toggleFeatured(productId: string, currentFeaturedId: string | null) {
+		setFeaturedProduct.mutate({
+			productId: currentFeaturedId === productId ? null : productId,
+		});
+	}
+
+	let editingId = $state<string | null>(null);
+
+	function startEdit(p: { id: string; name: string; link: string | null }) {
+		editingId = p.id;
+		editProductForm.reset({ link: p.link ?? "", name: p.name });
+	}
+
+	function cancelEdit() {
+		editingId = null;
+	}
+
+	const updateProduct = createMutation(() => ({
+		...orpc.products.update.mutationOptions(),
+		onSuccess: () => {
+			editingId = null;
+			refetchFounder();
+			queryClient.invalidateQueries({
+				queryKey: orpc.products.mine.queryOptions().queryKey,
+			});
+		},
+	}));
+
+	const editProductForm = createForm(() => ({
+		defaultValues: { link: "", name: "" },
+		onSubmit: async ({ value }) => {
+			if (!editingId) {
+				return;
+			}
+			await updateProduct.mutateAsync({
+				id: editingId,
+				link: value.link,
+				name: value.name,
+			});
+		},
+		validators: { onSubmit: productSchema },
+	}));
+
+	let confirmDeleteId = $state<string | null>(null);
+
+	const deleteProduct = createMutation(() => ({
+		...orpc.products.delete.mutationOptions(),
+		onSuccess: () => {
+			confirmDeleteId = null;
+			refetchFounder();
+			queryClient.invalidateQueries({
+				queryKey: orpc.products.mine.queryOptions().queryKey,
+			});
+		},
+	}));
 </script>
 
 {#if founderQuery.data}
 	{@const founder = founderQuery.data}
-	<div class="mx-auto max-w-2xl px-4 py-6">
-		<div class="mb-5 flex items-start justify-between">
+	<div class="mx-auto max-w-4xl px-4 py-6 md:px-6">
+		<div class="mb-6 flex items-start justify-between">
 			<div class="flex items-start gap-3">
 				<Avatar name={founder.name} size="lg" src={founder.avatarUrl} />
 				<div>
 					<h1 class="text-2xl font-bold">{founder.name}</h1>
-					<div class="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
-						{#if founder.productImageUrl}
-							<img
-								alt=""
-								class="size-4 rounded object-cover"
-								src={founder.productImageUrl}
-							/>
-						{/if}
-						{founder.product}
-						<StatusBadge status={founder.status} />
-					</div>
+					<p class="mt-0.5 text-sm text-muted-foreground">
+						construindo há {founder.streak}
+						{founder.streak === 1 ? "semana" : "semanas"}
+						seguidas
+					</p>
 					{#if isOwnProfile}
-						<div class="mt-3 flex gap-2">
+						<div class="mt-3">
 							<ImageUploadButton
 								endpoint="avatarUploader"
 								label="Trocar foto"
-								onUploaded={() => founderQuery.refetch()}
-							/>
-							<ImageUploadButton
-								endpoint="productImageUploader"
-								label="Foto do produto"
-								onUploaded={() => founderQuery.refetch()}
+								onUploaded={refetchFounder}
 							/>
 						</div>
 					{/if}
@@ -57,6 +166,301 @@
 			</div>
 			<StreakBadge weeks={founder.streak} />
 		</div>
+
+		<section class="mb-6">
+			<div class="mb-2.5 flex items-center justify-between">
+				<h2 class="text-sm font-semibold text-muted-foreground">Produtos</h2>
+				{#if isOwnProfile}
+					<button
+						class="text-xs font-medium text-foreground underline underline-offset-2 hover:text-neutral-400"
+						onclick={() => (showAddProduct = !showAddProduct)}
+						type="button"
+					>
+						{showAddProduct ? "cancelar" : "+ novo produto"}
+					</button>
+				{/if}
+			</div>
+
+			{#if isOwnProfile && showAddProduct}
+				<Card class="mb-3 border border-border p-4">
+					<form
+						class="flex flex-col gap-3"
+						onsubmit={(e) => {
+							e.preventDefault();
+							e.stopPropagation();
+							addProductForm.handleSubmit();
+						}}
+					>
+						<addProductForm.Field name="name">
+							{#snippet children(field)}
+								<Field
+									error={field.state.meta.isTouched
+										? field.state.meta.errors[0]?.message
+										: undefined}
+									htmlFor={field.name}
+									label="Nome do produto"
+								>
+									<Input
+										id={field.name}
+										name={field.name}
+										onblur={field.handleBlur}
+										oninput={(e: Event) =>
+											field.handleChange((e.target as HTMLInputElement).value)}
+										placeholder="ex: Matilha Builders"
+										value={field.state.value}
+									/>
+								</Field>
+							{/snippet}
+						</addProductForm.Field>
+						<addProductForm.Field name="link">
+							{#snippet children(field)}
+								<Field
+									error={field.state.meta.isTouched
+										? field.state.meta.errors[0]?.message
+										: undefined}
+									hint="opcional"
+									htmlFor={field.name}
+									label="Link"
+								>
+									<Input
+										id={field.name}
+										name={field.name}
+										onblur={field.handleBlur}
+										oninput={(e: Event) =>
+											field.handleChange((e.target as HTMLInputElement).value)}
+										placeholder="https://..."
+										value={field.state.value}
+									/>
+								</Field>
+							{/snippet}
+						</addProductForm.Field>
+						<addProductForm.Subscribe
+							selector={(state: typeof addProductForm.state): SubmitState => ({
+								canSubmit: state.canSubmit,
+								isSubmitting: state.isSubmitting,
+							})}
+						>
+							{#snippet children(state: SubmitState)}
+								<Button
+									disabled={!state.canSubmit || state.isSubmitting}
+									size="sm"
+									type="submit"
+								>
+									{state.isSubmitting ? "Salvando..." : "Adicionar produto"}
+								</Button>
+							{/snippet}
+						</addProductForm.Subscribe>
+					</form>
+				</Card>
+			{/if}
+
+			{#if founder.products.length}
+				<div class="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-3">
+					{#each founder.products as p (p.id)}
+						<div
+							class="flex flex-col gap-4 rounded-xl border border-border p-4"
+						>
+							{#if editingId === p.id}
+								<form
+									class="flex flex-col gap-3"
+									onsubmit={(e) => {
+										e.preventDefault();
+										e.stopPropagation();
+										editProductForm.handleSubmit();
+									}}
+								>
+									<editProductForm.Field name="name">
+										{#snippet children(field)}
+											<Field
+												error={field.state.meta.isTouched
+													? field.state.meta.errors[0]?.message
+													: undefined}
+												htmlFor={field.name}
+												label="Nome do produto"
+											>
+												<Input
+													id={field.name}
+													name={field.name}
+													onblur={field.handleBlur}
+													oninput={(e: Event) =>
+														field.handleChange(
+															(e.target as HTMLInputElement).value
+														)}
+													value={field.state.value}
+												/>
+											</Field>
+										{/snippet}
+									</editProductForm.Field>
+									<editProductForm.Field name="link">
+										{#snippet children(field)}
+											<Field
+												error={field.state.meta.isTouched
+													? field.state.meta.errors[0]?.message
+													: undefined}
+												hint="opcional"
+												htmlFor={field.name}
+												label="Link"
+											>
+												<Input
+													id={field.name}
+													name={field.name}
+													onblur={field.handleBlur}
+													oninput={(e: Event) =>
+														field.handleChange(
+															(e.target as HTMLInputElement).value
+														)}
+													placeholder="https://..."
+													value={field.state.value}
+												/>
+											</Field>
+										{/snippet}
+									</editProductForm.Field>
+									<div class="flex gap-2">
+										<editProductForm.Subscribe
+											selector={(state: typeof editProductForm.state): SubmitState => ({
+												canSubmit: state.canSubmit,
+												isSubmitting: state.isSubmitting,
+											})}
+										>
+											{#snippet children(state: SubmitState)}
+												<Button
+													disabled={!state.canSubmit || state.isSubmitting}
+													size="sm"
+													type="submit"
+												>
+													{state.isSubmitting ? "Salvando..." : "Salvar"}
+												</Button>
+											{/snippet}
+										</editProductForm.Subscribe>
+										<Button
+											onclick={cancelEdit}
+											size="sm"
+											type="button"
+											variant="outline"
+										>
+											Cancelar
+										</Button>
+									</div>
+								</form>
+							{:else}
+								<ProductChip
+									product={p}
+									showStatus={!isOwnProfile}
+									size="md"
+									variant="cover"
+								/>
+								{#if isOwnProfile}
+									<Field label="Status">
+										<Select.Root
+											onValueChange={(v) =>
+												updateProductStatus.mutate({
+													id: p.id,
+													status: v as "validating" | "building" | "launched",
+												})}
+											type="single"
+											value={p.status}
+										>
+											<Select.Trigger class="w-full text-xs" size="sm">
+												{p.status === "validating"
+													? "Validando"
+													: p.status === "building"
+														? "Construindo"
+														: "Lançado"}
+											</Select.Trigger>
+											<Select.Content>
+												<Select.Item label="Validando" value="validating"
+													>Validando</Select.Item
+												>
+												<Select.Item label="Construindo" value="building"
+													>Construindo</Select.Item
+												>
+												<Select.Item label="Lançado" value="launched"
+													>Lançado</Select.Item
+												>
+											</Select.Content>
+										</Select.Root>
+									</Field>
+
+									{#if confirmDeleteId === p.id}
+										<div class="flex items-center gap-2">
+											<Button
+												class="h-8"
+												disabled={deleteProduct.isPending}
+												onclick={() => deleteProduct.mutate({ id: p.id })}
+												size="sm"
+												variant="destructive"
+											>
+												{deleteProduct.isPending
+													? "Excluindo..."
+													: "Confirmar exclusão"}
+											</Button>
+											<button
+												class="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
+												onclick={() => (confirmDeleteId = null)}
+												type="button"
+											>
+												cancelar
+											</button>
+										</div>
+									{:else}
+										<div class="flex items-center gap-2">
+											<button
+												class="flex size-8 items-center justify-center rounded-md border border-border transition-colors hover:bg-accent"
+												onclick={() =>
+													toggleFeatured(p.id, founder.featuredProductId)}
+												title={founder.featuredProductId === p.id
+													? "Remover destaque"
+													: "Destacar no board"}
+												type="button"
+												class:border-streak={founder.featuredProductId === p.id}
+												class:text-streak={founder.featuredProductId === p.id}
+											>
+												<StarIcon
+													class="size-3.5"
+													fill={founder.featuredProductId === p.id
+														? "currentColor"
+														: "none"}
+												/>
+											</button>
+											<div class="ml-auto flex items-center gap-2">
+												<ImageUploadButton
+													endpoint="productImageUploader"
+													iconOnly
+													input={{ productId: p.id }}
+													label="Trocar foto do produto"
+													onUploaded={refetchFounder}
+												/>
+												<button
+													class="flex size-8 items-center justify-center rounded-md border border-border transition-colors hover:bg-accent"
+													onclick={() => startEdit(p)}
+													title="Editar produto"
+													type="button"
+												>
+													<PencilIcon class="size-3.5" />
+												</button>
+												<button
+													class="flex size-8 items-center justify-center rounded-md border border-border text-destructive transition-colors hover:bg-destructive/10"
+													onclick={() => (confirmDeleteId = p.id)}
+													title="Excluir produto"
+													type="button"
+												>
+													<Trash2Icon class="size-3.5" />
+												</button>
+											</div>
+										</div>
+									{/if}
+								{/if}
+							{/if}
+						</div>
+					{/each}
+				</div>
+			{:else}
+				<p class="text-sm text-muted-foreground">
+					{isOwnProfile ? "Cadastra teu primeiro produto." : "Sem produtos ainda."}
+				</p>
+			{/if}
+		</section>
+
 		<p class="mb-3 font-mono text-[13px] text-muted-foreground">
 			{historyQuery.data?.length ?? 0}
 			{historyQuery.data?.length === 1 ? "check-in" : "check-ins"}
@@ -66,7 +470,7 @@
 			{#if historyQuery.data?.length}
 				{#each historyQuery.data as ci, index (ci.id)}
 					<CheckInItem
-						checkIn={{ ...ci, name: founder.name, product: founder.product }}
+						checkIn={{ ...ci, name: founder.name }}
 						{index}
 						showAuthor={false}
 					/>

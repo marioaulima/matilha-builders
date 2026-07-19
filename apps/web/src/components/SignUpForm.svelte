@@ -1,144 +1,144 @@
 <script lang="ts">
-	import { createForm } from '@tanstack/svelte-form';
-	import { z } from 'zod';
-	import { authClient } from '$lib/auth-client';
-	import { goto } from '$app/navigation';
+	import { createForm } from "@tanstack/svelte-form";
+	import { z } from "zod";
+	import { goto } from "$app/navigation";
+	import { authClient } from "$lib/auth-client";
+	import Field from "$lib/components/matilha/Field.svelte";
+	import { Button } from "$lib/components/ui/button/index.js";
+	import { Card } from "$lib/components/ui/card/index.js";
+	import { Input } from "$lib/components/ui/input/index.js";
 
 	let { switchToSignIn } = $props<{ switchToSignIn: () => void }>();
 
 	const validationSchema = z.object({
-		name: z.string().min(2, 'Name must be at least 2 characters'),
-		email: z.email('Invalid email address'),
-		password: z.string().min(8, 'Password must be at least 8 characters'),
+		email: z.email("Email inválido"),
+		name: z.string().min(2, "Nome precisa ter pelo menos 2 letras"),
+		password: z.string().min(8, "Senha precisa ter pelo menos 8 caracteres"),
 	});
 
-
 	const form = createForm(() => ({
-		defaultValues: { name: '', email: '', password: '' },
+		defaultValues: { email: "", name: "", password: "" },
 		onSubmit: async ({ value }) => {
-				await authClient.signUp.email(
-					{
-						email: value.email,
-						password: value.password,
-						name: value.name,
+			await authClient.signUp.email(
+				{
+					email: value.email,
+					name: value.name,
+					password: value.password,
+				},
+				{
+					onError: (error) => {
+						console.error(
+							error.error.message || "Não deu pra criar a conta. Tenta de novo."
+						);
 					},
-					{
-						onSuccess: () => {
-							goto('/dashboard');
-						},
-						onError: (error) => {
-							console.log(error.error.message || 'Sign up failed. Please try again.');
-						},
-					}
-				);
-
+					onSuccess: () => goto("/board"),
+				}
+			);
 		},
 		validators: {
 			onSubmit: validationSchema,
 		},
 	}));
 
-	type SubmitState = Pick<typeof form.state, 'canSubmit' | 'isSubmitting'>;
+	type SubmitState = Pick<typeof form.state, "canSubmit" | "isSubmitting">;
 </script>
 
-<div class="mx-auto mt-10 w-full max-w-md p-6">
-	<h1 class="mb-6 text-center font-bold text-3xl">Create Account</h1>
-
-	<form
-		id="form"
-		class="space-y-4"
-		onsubmit={(e) => {
-			e.preventDefault();
-			e.stopPropagation();
-			form.handleSubmit();
-		}}
-	>
-		<form.Field name="name">
-			{#snippet children(field)}
-				<div class="space-y-1">
-					<label for={field.name}>Name</label>
-					<input
-						id={field.name}
-						name={field.name}
-						class="w-full border"
-						onblur={field.handleBlur}
-						value={field.state.value}
-						oninput={(e: Event) => {
-							const target = e.target as HTMLInputElement;
-							field.handleChange(target.value);
-						}}
-					/>
-					{#if field.state.meta.isTouched}
-						{#each field.state.meta.errors as error}
-							<p class="text-sm text-red-500" role="alert">{error}</p>
-						{/each}
-					{/if}
-				</div>
-			{/snippet}
-		</form.Field>
-
-		<form.Field name="email">
-			{#snippet children(field)}
-				<div class="space-y-1">
-					<label for={field.name}>Email</label>
-					<input
-						id={field.name}
-						name={field.name}
-						type="email"
-						class="w-full border"
-						onblur={field.handleBlur}
-						value={field.state.value}
-						oninput={(e: Event) => {
-							const target = e.target as HTMLInputElement;
-							field.handleChange(target.value);
-						}}
-					/>
-					{#if field.state.meta.isTouched}
-						{#each field.state.meta.errors as error}
-							<p class="text-sm text-red-500" role="alert">{error}</p>
-						{/each}
-					{/if}
-				</div>
-			{/snippet}
-		</form.Field>
-
-		<form.Field name="password">
-			{#snippet children(field)}
-				<div class="space-y-1">
-					<label for={field.name}>Password</label>
-					<input
-						id={field.name}
-						name={field.name}
-						type="password"
-						class="w-full border"
-						onblur={field.handleBlur}
-						value={field.state.value}
-						oninput={(e: Event) => {
-							const target = e.target as HTMLInputElement;
-							field.handleChange(target.value);
-						}}
-					/>
-					{#if field.state.meta.isTouched}
-						{#each field.state.meta.errors as error}
-							<p class="text-sm text-red-500" role="alert">{error}</p>
-						{/each}
-					{/if}
-				</div>
-			{/snippet}
-		</form.Field>
-
-		<form.Subscribe selector={(state: typeof form.state): SubmitState => ({ canSubmit: state.canSubmit, isSubmitting: state.isSubmitting })}>
-			{#snippet children(state: SubmitState)}
-				<button type="submit" class="w-full" disabled={!state.canSubmit || state.isSubmitting}>
-					{state.isSubmitting ? 'Submitting...' : 'Sign Up'}
-				</button>
-			{/snippet}
-		</form.Subscribe>
-	</form>
-
-	<div class="mt-4 text-center">
-		<button type="button" class="text-indigo-600 hover:text-indigo-800" onclick={switchToSignIn}>
-			Already have an account? Sign In
-		</button>
+<div class="mx-auto w-full max-w-[400px] px-4 py-16">
+	<div class="mb-6 text-center">
+		<div class="font-mono text-2xl font-bold">matilha_builders</div>
+		<p class="mt-1.5 text-sm text-muted-foreground">Criar conta na matilha.</p>
 	</div>
+	<Card class="border border-border p-4">
+		<form
+			class="flex flex-col gap-4"
+			onsubmit={(e) => {
+				e.preventDefault();
+				e.stopPropagation();
+				form.handleSubmit();
+			}}
+		>
+			<form.Field name="name">
+				{#snippet children(field)}
+					<Field
+						error={field.state.meta.isTouched ? field.state.meta.errors[0]?.message : undefined}
+						htmlFor={field.name}
+						label="Nome"
+					>
+						<Input
+							id={field.name}
+							name={field.name}
+							onblur={field.handleBlur}
+							oninput={(e: Event) => field.handleChange((e.target as HTMLInputElement).value)}
+							placeholder="Como te chamam"
+							value={field.state.value}
+						/>
+					</Field>
+				{/snippet}
+			</form.Field>
+
+			<form.Field name="email">
+				{#snippet children(field)}
+					<Field
+						error={field.state.meta.isTouched ? field.state.meta.errors[0]?.message : undefined}
+						htmlFor={field.name}
+						label="Email"
+					>
+						<Input
+							id={field.name}
+							name={field.name}
+							onblur={field.handleBlur}
+							oninput={(e: Event) => field.handleChange((e.target as HTMLInputElement).value)}
+							placeholder="seu@email.com"
+							type="email"
+							value={field.state.value}
+						/>
+					</Field>
+				{/snippet}
+			</form.Field>
+
+			<form.Field name="password">
+				{#snippet children(field)}
+					<Field
+						error={field.state.meta.isTouched ? field.state.meta.errors[0]?.message : undefined}
+						htmlFor={field.name}
+						label="Senha"
+					>
+						<Input
+							id={field.name}
+							name={field.name}
+							onblur={field.handleBlur}
+							oninput={(e: Event) => field.handleChange((e.target as HTMLInputElement).value)}
+							placeholder="••••••••"
+							type="password"
+							value={field.state.value}
+						/>
+					</Field>
+				{/snippet}
+			</form.Field>
+
+			<form.Subscribe
+				selector={(state: typeof form.state): SubmitState => ({ canSubmit: state.canSubmit, isSubmitting: state.isSubmitting })}
+			>
+				{#snippet children(state: SubmitState)}
+					<Button
+						class="w-full"
+						disabled={!state.canSubmit || state.isSubmitting}
+						type="submit"
+					>
+						{state.isSubmitting ? "Criando..." : "Criar conta"}
+					</Button>
+				{/snippet}
+			</form.Subscribe>
+		</form>
+	</Card>
+	<p class="mt-4 text-center text-sm text-muted-foreground">
+		Já tem conta?
+		<button
+			class="text-foreground transition-colors hover:text-neutral-400"
+			onclick={switchToSignIn}
+			type="button"
+		>
+			Entrar
+		</button>
+	</p>
 </div>

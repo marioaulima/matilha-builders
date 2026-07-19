@@ -7,10 +7,12 @@
 	import { MAX_PRODUCTS_PER_FOUNDER } from "@matilha-builders/api/lib/constants";
 	import { createForm } from "@tanstack/svelte-form";
 	import {
+		createInfiniteQuery,
 		createMutation,
 		createQuery,
 		useQueryClient,
 	} from "@tanstack/svelte-query";
+	import InfiniteScrollSentinel from "$lib/components/matilha/InfiniteScrollSentinel.svelte";
 	import { z } from "zod";
 	import { page } from "$app/state";
 	import { authClient } from "$lib/auth-client";
@@ -36,8 +38,15 @@
 	const founderQuery = createQuery(() =>
 		orpc.founders.get.queryOptions({ input: { founderId } })
 	);
-	const historyQuery = createQuery(() =>
-		orpc.checkIns.listByFounder.queryOptions({ input: { founderId } })
+	const historyQuery = createInfiniteQuery(() =>
+		orpc.checkIns.listByFounder.infiniteOptions({
+			getNextPageParam: (lastPage) => lastPage.nextCursor,
+			initialPageParam: 0,
+			input: (cursor: number) => ({ cursor, founderId }),
+		})
+	);
+	const history = $derived(
+		historyQuery.data?.pages.flatMap((page) => page.items) ?? []
 	);
 
 	const queryClient = useQueryClient();
@@ -103,13 +112,19 @@
 	// back to the pre-mutation data before the refetch resolves.
 	function settleOtherCaches() {
 		queryClient.invalidateQueries({
-			queryKey: orpc.founders.list.queryOptions().queryKey,
+			queryKey: orpc.founders.list.infiniteKey({
+				initialPageParam: 0,
+				input: (cursor: number) => ({ cursor }),
+			}),
 		});
 		queryClient.invalidateQueries({
 			queryKey: orpc.products.mine.queryOptions().queryKey,
 		});
 		queryClient.invalidateQueries({
-			queryKey: orpc.checkIns.listFeed.queryOptions().queryKey,
+			queryKey: orpc.checkIns.listFeed.infiniteKey({
+				initialPageParam: 0,
+				input: (cursor: number) => ({ cursor }),
+			}),
 		});
 	}
 
@@ -377,8 +392,10 @@
 	type HistoryData = NonNullable<typeof historyQuery.data>;
 
 	function historyQueryKey() {
-		return orpc.checkIns.listByFounder.queryOptions({ input: { founderId } })
-			.queryKey;
+		return orpc.checkIns.listByFounder.infiniteKey({
+			initialPageParam: 0,
+			input: (cursor: number) => ({ cursor, founderId }),
+		});
 	}
 
 	const deleteProduct = createMutation(() => ({
@@ -409,7 +426,15 @@
 				products: data.products.filter((p) => p.id !== input.id),
 			}));
 			queryClient.setQueryData<HistoryData>(historyQueryKey(), (old) =>
-				old ? old.filter((ci) => ci.productId !== input.id) : old
+				old
+					? {
+							...old,
+							pages: old.pages.map((page) => ({
+								...page,
+								items: page.items.filter((ci) => ci.productId !== input.id),
+							})),
+						}
+					: old
 			);
 			confirmDeleteId = null;
 			return { historySnapshot, snapshot };
@@ -1078,8 +1103,8 @@
 				<p
 					class="font-mono text-[13px] text-muted-foreground transition-colors group-hover:text-foreground"
 				>
-					{historyQuery.data?.length ?? 0}
-					{historyQuery.data?.length === 1 ? "check-in" : "check-ins"}
+					{history.length}
+					{history.length === 1 ? "check-in" : "check-ins"}
 					· olha quanto já andou
 				</p>
 				<ChevronDownIcon
@@ -1090,14 +1115,19 @@
 				class="overflow-hidden data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down"
 			>
 				<div class="flex flex-col gap-3 pt-3">
-					{#if historyQuery.data?.length}
-						{#each historyQuery.data as ci, index (ci.id)}
+					{#if history.length}
+						{#each history as ci, index (ci.id)}
 							<CheckInItem
 								checkIn={{ ...ci, name: founder.name }}
 								{index}
 								showAuthor={false}
 							/>
 						{/each}
+						<InfiniteScrollSentinel
+							hasNextPage={historyQuery.hasNextPage}
+							isFetchingNextPage={historyQuery.isFetchingNextPage}
+							onLoadMore={() => historyQuery.fetchNextPage()}
+						/>
 					{:else}
 						<p class="text-sm text-muted-foreground">
 							Nenhum check-in ainda. Começa essa semana.

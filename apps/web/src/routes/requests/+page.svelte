@@ -1,14 +1,15 @@
 <script lang="ts">
 	import { AnimatePresence, motion } from "@humanspeak/svelte-motion";
 	import {
+		createInfiniteQuery,
 		createMutation,
-		createQuery,
 		useQueryClient,
 	} from "@tanstack/svelte-query";
 	import { goto } from "$app/navigation";
 	import { authClient } from "$lib/auth-client";
 	import { Button } from "$lib/components/ui/button/index.js";
 	import { Loader } from "$lib/components/ui/loader/index.js";
+	import InfiniteScrollSentinel from "$lib/components/matilha/InfiniteScrollSentinel.svelte";
 	import { orpc } from "$lib/orpc";
 
 	const interestLabels: Record<string, string> = {
@@ -29,22 +30,44 @@
 	});
 
 	const queryClient = useQueryClient();
-	const pendingQuery = createQuery(() => ({
-		...orpc.admin.listPendingUsers.queryOptions(),
+	const pendingQuery = createInfiniteQuery(() => ({
+		...orpc.admin.listPendingUsers.infiniteOptions({
+			getNextPageParam: (lastPage) => lastPage.nextCursor,
+			initialPageParam: 0,
+			input: (cursor: number) => ({ cursor }),
+		}),
 		enabled: isSuperAdmin,
 	}));
 
+	const pendingUsers = $derived(
+		pendingQuery.data?.pages.flatMap((page) => page.items) ?? []
+	);
+
+	type PendingItem = NonNullable<typeof pendingQuery.data>["pages"][number]["items"][number];
 	type PendingData = NonNullable<typeof pendingQuery.data>;
 
 	function pendingQueryKey() {
-		return orpc.admin.listPendingUsers.queryOptions().queryKey;
+		return orpc.admin.listPendingUsers.infiniteKey({
+			initialPageParam: 0,
+			input: (cursor: number) => ({ cursor }),
+		});
 	}
 
 	async function removeOptimistically(userId: string) {
 		await queryClient.cancelQueries({ queryKey: pendingQueryKey() });
 		const snapshot = queryClient.getQueryData<PendingData>(pendingQueryKey());
 		queryClient.setQueryData<PendingData>(pendingQueryKey(), (old) =>
-			old ? old.filter((u) => u.userId !== userId) : old
+			old
+				? {
+						...old,
+						pages: old.pages.map((page) => ({
+							...page,
+							items: page.items.filter(
+								(u: PendingItem) => u.userId !== userId
+							),
+						})),
+					}
+				: old
 		);
 		return { snapshot };
 	}
@@ -92,14 +115,14 @@
 	</div>
 	{#if pendingQuery.isLoading}
 		<Loader size="sm" subtitle="Buscando solicitações" title="Carregando..." />
-	{:else if !pendingQuery.data?.length}
+	{:else if !pendingUsers.length}
 		<p class="text-sm text-muted-foreground">
 			Nenhuma solicitação pendente no momento.
 		</p>
 	{:else}
 		<div class="flex flex-col gap-3">
 			<AnimatePresence>
-				{#each pendingQuery.data as request (request.userId)}
+				{#each pendingUsers as request (request.userId)}
 					<motion.div
 						animate={{ opacity: 1, scale: 1, y: 0 }}
 						class="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between"
@@ -143,5 +166,10 @@
 				{/each}
 			</AnimatePresence>
 		</div>
+		<InfiniteScrollSentinel
+			hasNextPage={pendingQuery.hasNextPage}
+			isFetchingNextPage={pendingQuery.isFetchingNextPage}
+			onLoadMore={() => pendingQuery.fetchNextPage()}
+		/>
 	{/if}
 </div>

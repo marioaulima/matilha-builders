@@ -56,12 +56,37 @@
 		progress: string;
 	};
 
+	type Page<T> = { items: T[]; nextCursor: number | undefined };
+	type Paginated<T> = { pageParams: number[]; pages: Page<T>[] };
+
 	function feedKey() {
-		return orpc.checkIns.listFeed.queryOptions().queryKey;
+		return orpc.checkIns.listFeed.infiniteKey({
+			initialPageParam: 0,
+			input: (cursor: number) => ({ cursor }),
+		});
 	}
 	function historyKey(founderId: string) {
-		return orpc.checkIns.listByFounder.queryOptions({ input: { founderId } })
-			.queryKey;
+		return orpc.checkIns.listByFounder.infiniteKey({
+			initialPageParam: 0,
+			input: (cursor: number) => ({ cursor, founderId }),
+		});
+	}
+
+	function prependToFirstPage<T>(
+		data: Paginated<T> | undefined,
+		item: T
+	): Paginated<T> | undefined {
+		if (!data || data.pages.length === 0) {
+			return data;
+		}
+		const [firstPage, ...restPages] = data.pages;
+		if (!firstPage) {
+			return data;
+		}
+		return {
+			...data,
+			pages: [{ ...firstPage, items: [item, ...firstPage.items] }, ...restPages],
+		};
 	}
 
 	const postCheckIn = createMutation(() => ({
@@ -71,9 +96,9 @@
 			_input,
 			context:
 				| {
-						feedSnapshot: FeedItem[] | undefined;
+						feedSnapshot: Paginated<FeedItem> | undefined;
 						founderId: string;
-						historySnapshot: HistoryItem[] | undefined;
+						historySnapshot: Paginated<HistoryItem> | undefined;
 				  }
 				| undefined
 		) => {
@@ -94,8 +119,9 @@
 			const founderId = $sessionQuery.data?.user.id ?? "";
 			await queryClient.cancelQueries({ queryKey: feedKey() });
 			await queryClient.cancelQueries({ queryKey: historyKey(founderId) });
-			const feedSnapshot = queryClient.getQueryData<FeedItem[]>(feedKey());
-			const historySnapshot = queryClient.getQueryData<HistoryItem[]>(
+			const feedSnapshot =
+				queryClient.getQueryData<Paginated<FeedItem>>(feedKey());
+			const historySnapshot = queryClient.getQueryData<Paginated<HistoryItem>>(
 				historyKey(founderId)
 			);
 			const product =
@@ -104,41 +130,33 @@
 				null;
 			const optimisticId = `optimistic-${crypto.randomUUID()}`;
 			const createdAt = new Date();
-			queryClient.setQueryData<FeedItem[]>(feedKey(), (old) =>
-				old
-					? [
-							{
-								avatarUrl: null,
-								blocked: input.blocked,
-								createdAt,
-								founderId,
-								help: input.help ?? null,
-								id: optimisticId,
-								name: $sessionQuery.data?.user.name ?? "",
-								product,
-								progress: input.progress,
-								streak: 0,
-							},
-							...old,
-						]
-					: old
+			queryClient.setQueryData<Paginated<FeedItem>>(feedKey(), (old) =>
+				prependToFirstPage(old, {
+					avatarUrl: null,
+					blocked: input.blocked,
+					createdAt,
+					founderId,
+					help: input.help ?? null,
+					id: optimisticId,
+					name: $sessionQuery.data?.user.name ?? "",
+					product,
+					progress: input.progress,
+					streak: 0,
+				})
 			);
-			queryClient.setQueryData<HistoryItem[]>(historyKey(founderId), (old) =>
-				old
-					? [
-							{
-								blocked: input.blocked,
-								createdAt,
-								founderId,
-								help: input.help ?? null,
-								id: optimisticId,
-								product,
-								productId: input.productId ?? null,
-								progress: input.progress,
-							},
-							...old,
-						]
-					: old
+			queryClient.setQueryData<Paginated<HistoryItem>>(
+				historyKey(founderId),
+				(old) =>
+					prependToFirstPage(old, {
+						blocked: input.blocked,
+						createdAt,
+						founderId,
+						help: input.help ?? null,
+						id: optimisticId,
+						product,
+						productId: input.productId ?? null,
+						progress: input.progress,
+					})
 			);
 			return { feedSnapshot, founderId, historySnapshot };
 		},
@@ -151,7 +169,10 @@
 					.queryKey,
 			});
 			queryClient.invalidateQueries({
-				queryKey: orpc.founders.list.queryOptions().queryKey,
+				queryKey: orpc.founders.list.infiniteKey({
+					initialPageParam: 0,
+					input: (cursor: number) => ({ cursor }),
+				}),
 			});
 		},
 	}));

@@ -51,6 +51,7 @@
 
 	const queryClient = useQueryClient();
 	function refetchFounder() {
+		settleOtherCaches();
 		return founderQuery.refetch();
 	}
 
@@ -105,26 +106,23 @@
 		}
 	}
 
-	// Only invalidate caches for OTHER pages (board, checkin's product picker).
-	// The founder query backing this page is kept in sync by direct cache
-	// patches (onMutate/onSuccess below) instead of invalidate-and-refetch,
-	// which would otherwise race the optimistic update and briefly flicker
-	// back to the pre-mutation data before the refetch resolves.
+	// Only invalidate caches for OTHER pages (board, checkin's product picker,
+	// feed, everyone's check-in history). The founder query backing THIS page
+	// is kept in sync by direct cache patches (onMutate/onSuccess below)
+	// instead of invalidate-and-refetch, which would otherwise race the
+	// optimistic update and briefly flicker back to the pre-mutation data
+	// before the refetch resolves.
+	//
+	// `.key()` is orpc's partial-matching key (path only, no input/type) — it
+	// matches every cached variant of that procedure (paginated or not)
+	// instead of us having to hand-reconstruct the exact key a paginated
+	// query builds internally, which is fragile and easy to get subtly wrong.
 	function settleOtherCaches() {
+		queryClient.invalidateQueries({ queryKey: orpc.founders.list.key() });
+		queryClient.invalidateQueries({ queryKey: orpc.products.mine.key() });
+		queryClient.invalidateQueries({ queryKey: orpc.checkIns.listFeed.key() });
 		queryClient.invalidateQueries({
-			queryKey: orpc.founders.list.infiniteKey({
-				initialPageParam: 0,
-				input: (cursor: number) => ({ cursor }),
-			}),
-		});
-		queryClient.invalidateQueries({
-			queryKey: orpc.products.mine.queryOptions().queryKey,
-		});
-		queryClient.invalidateQueries({
-			queryKey: orpc.checkIns.listFeed.infiniteKey({
-				initialPageParam: 0,
-				input: (cursor: number) => ({ cursor }),
-			}),
+			queryKey: orpc.checkIns.listByFounder.key(),
 		});
 	}
 

@@ -29,9 +29,28 @@
 	let { founder, index = 0 }: { founder: Founder; index?: number } = $props();
 
 	// Local-only reordering: clicking a secondary product swaps it into the
-	// featured slot for this browsing session. Not persisted.
-	// svelte-ignore state_referenced_locally
-	let localProducts = $state(founder.products);
+	// featured slot for this browsing session. Not persisted. Derived (not a
+	// standalone $state snapshot) so it stays in sync with `founder.products`
+	// whenever the board list refetches — Svelte reuses this same component
+	// instance across refetches (keyed by userId), so a plain $state snapshot
+	// taken at mount would otherwise never see later changes (new/edited
+	// products, for example).
+	let highlightedId = $state<string | null>(null);
+	const localProducts = $derived.by(() => {
+		if (!highlightedId) {
+			return founder.products;
+		}
+		const highlightedIndex = founder.products.findIndex(
+			(p) => p.id === highlightedId
+		);
+		if (highlightedIndex <= 0) {
+			return founder.products;
+		}
+		return [
+			founder.products[highlightedIndex] as Product,
+			...founder.products.filter((_, i) => i !== highlightedIndex),
+		];
+	});
 
 	function openProfile() {
 		goto(`/profile/${founder.userId}`);
@@ -46,10 +65,7 @@
 
 	function highlightProduct(e: MouseEvent, clicked: Product) {
 		e.stopPropagation();
-		localProducts = [
-			clicked,
-			...localProducts.filter((p) => p.id !== clicked.id),
-		];
+		highlightedId = clicked.id;
 	}
 </script>
 

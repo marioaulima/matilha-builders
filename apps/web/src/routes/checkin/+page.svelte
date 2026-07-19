@@ -164,20 +164,17 @@
 			);
 			return { feedSnapshot, founderId, historySnapshot };
 		},
+		// Broad `.key()` partial-match invalidation: this page doesn't render
+		// any of these, so there's no risk of racing an optimistic patch —
+		// just make sure feed/board/profile pick up the new check-in and
+		// streak next time they're viewed.
 		onSettled: () => {
-			const founderId = $sessionQuery.data?.user.id ?? "";
-			queryClient.invalidateQueries({ queryKey: feedKey() });
-			queryClient.invalidateQueries({ queryKey: historyKey(founderId) });
+			queryClient.invalidateQueries({ queryKey: orpc.checkIns.listFeed.key() });
 			queryClient.invalidateQueries({
-				queryKey: orpc.founders.get.queryOptions({ input: { founderId } })
-					.queryKey,
+				queryKey: orpc.checkIns.listByFounder.key(),
 			});
-			queryClient.invalidateQueries({
-				queryKey: orpc.founders.list.infiniteKey({
-					initialPageParam: 0,
-					input: (cursor: number) => ({ cursor }),
-				}),
-			});
+			queryClient.invalidateQueries({ queryKey: orpc.founders.get.key() });
+			queryClient.invalidateQueries({ queryKey: orpc.founders.list.key() });
 		},
 	}));
 

@@ -11,9 +11,9 @@
 </script>
 
 <div
-	bind:this={ref}
-	data-slot="popover-title"
 	class={cn("font-medium", className)}
+	data-slot="popover-title"
+	bind:this={ref}
 	{...restProps}
 >
 	{@render children?.()}

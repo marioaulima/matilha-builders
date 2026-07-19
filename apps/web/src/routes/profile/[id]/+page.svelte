@@ -2,8 +2,10 @@
 	import { AnimatePresence, motion } from "@humanspeak/svelte-motion";
 	import ChevronDownIcon from "@lucide/svelte/icons/chevron-down";
 	import PencilIcon from "@lucide/svelte/icons/pencil";
+	import PlusIcon from "@lucide/svelte/icons/plus";
 	import StarIcon from "@lucide/svelte/icons/star";
 	import Trash2Icon from "@lucide/svelte/icons/trash-2";
+	import XIcon from "@lucide/svelte/icons/x";
 	import { MAX_PRODUCTS_PER_FOUNDER } from "@matilha-builders/api/lib/constants";
 	import { createForm } from "@tanstack/svelte-form";
 	import {
@@ -597,13 +599,19 @@
 						{#if isOwnProfile}
 							<div class="mb-2.5 flex justify-end">
 								{#if founder.products.length < MAX_PRODUCTS_PER_FOUNDER}
-									<button
-										class="text-xs font-medium text-foreground underline underline-offset-2 hover:text-neutral-400"
+									<Button
 										onclick={() => (showAddProduct = !showAddProduct)}
-										type="button"
+										size="sm"
+										variant={showAddProduct ? "outline" : "default"}
 									>
-										{showAddProduct ? "cancelar" : "+ novo produto"}
-									</button>
+										{#if showAddProduct}
+											<XIcon class="size-3.5" />
+											Cancelar
+										{:else}
+											<PlusIcon class="size-3.5" />
+											Novo produto
+										{/if}
+									</Button>
 								{:else}
 									<span class="text-xs text-muted-foreground">
 										Limite de {MAX_PRODUCTS_PER_FOUNDER} produtos atingido

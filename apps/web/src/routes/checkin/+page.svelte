@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { AnimatePresence, motion } from "@humanspeak/svelte-motion";
+	import { computeNextStreak } from "@matilha-builders/api/lib/streak";
 	import { createForm } from "@tanstack/svelte-form";
 	import {
 		createMutation,
@@ -17,8 +18,17 @@
 	import { orpc } from "$lib/orpc";
 
 	const sessionQuery = authClient.useSession();
+	const currentUserId = $derived($sessionQuery.data?.user.id ?? "");
 	const productsQuery = createQuery(() => orpc.products.mine.queryOptions());
+	const founderQuery = createQuery(() => ({
+		...orpc.founders.get.queryOptions({ input: { founderId: currentUserId } }),
+		enabled: !!currentUserId,
+	}));
 	const queryClient = useQueryClient();
+
+	let showSuccess = $state(false);
+	let optimisticStreak = $state(0);
+	let submitError = $state(false);
 
 	type ProductRef = {
 		createdAt: Date;
@@ -117,9 +127,18 @@
 					context.historySnapshot
 				);
 			}
+			showSuccess = false;
+			submitError = true;
 		},
 		onMutate: async (input) => {
 			const founderId = $sessionQuery.data?.user.id ?? "";
+			submitError = false;
+			optimisticStreak = computeNextStreak(
+				founderQuery.data?.streak ?? 0,
+				founderQuery.data?.lastCheckInAt ?? null,
+				new Date()
+			);
+			showSuccess = true;
 			await queryClient.cancelQueries({ queryKey: feedKey() });
 			await queryClient.cancelQueries({ queryKey: historyKey(founderId) });
 			const feedSnapshot = queryClient.getQueryData<Paginated<FeedItem>>(
@@ -187,8 +206,13 @@
 
 	const form = createForm(() => ({
 		defaultValues: { blocked: "", help: "", productId: "", progress: "" },
-		onSubmit: async ({ value }) => {
-			await postCheckIn.mutateAsync({
+		onSubmit: ({ value }) => {
+			// Fire-and-forget: the mutation is optimistic (see postCheckIn.onMutate),
+			// so the success screen appears instantly instead of waiting on the
+			// network round-trip. Awaiting mutateAsync here would keep the submit
+			// button's isSubmitting (and its "Postando..." label) on until the
+			// request resolves, defeating the point of being optimistic.
+			postCheckIn.mutate({
 				blocked: value.blocked,
 				help: value.help || undefined,
 				productId: value.productId || undefined,
@@ -203,7 +227,7 @@
 	type SubmitState = Pick<typeof form.state, "canSubmit" | "isSubmitting">;
 </script>
 
-{#if postCheckIn.isSuccess}
+{#if showSuccess}
 	<div class="mx-auto max-w-4xl px-4 py-12 md:px-6">
 		<motion.div
 			animate={{ opacity: 1, scale: 1 }}
@@ -217,8 +241,10 @@
 				initial={{ opacity: 0, scale: 0.8 }}
 				transition={{ delay: 0.1, duration: 0.4, type: "spring", bounce: 0.35 }}
 			>
-				{postCheckIn.data.streak}
-				{postCheckIn.data.streak === 1 ? "semana" : "semanas"}
+				{postCheckIn.data?.streak ?? optimisticStreak}
+				{(postCheckIn.data?.streak ?? optimisticStreak) === 1
+					? "semana"
+					: "semanas"}
 			</motion.div>
 			<p class="mt-1 text-sm text-muted-foreground">
 				Check-in postado. Streak mantido.
@@ -240,6 +266,20 @@
 			/>
 		{:else}
 			<Card class="border border-border p-4">
+				<AnimatePresence>
+					{#if submitError}
+						<motion.div
+							animate={{ opacity: 1, y: 0 }}
+							class="mb-4 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-destructive text-sm"
+							exit={{ opacity: 0, y: -6 }}
+							initial={{ opacity: 0, y: -6 }}
+							key="submit-error"
+							transition={{ duration: 0.2 }}
+						>
+							Não deu pra postar o check-in. Tenta de novo.
+						</motion.div>
+					{/if}
+				</AnimatePresence>
 				<form
 					class="flex flex-col gap-4"
 					onsubmit={(e) => {

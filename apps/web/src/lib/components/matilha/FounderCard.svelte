@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { motion } from "@humanspeak/svelte-motion";
+	import { AnimatePresence, motion } from "@humanspeak/svelte-motion";
 	import { goto } from "$app/navigation";
 	import { formatRelative } from "$lib/format";
 	import Avatar from "./Avatar.svelte";
@@ -78,10 +78,16 @@
 			{#if rest.length}
 				<div class="mt-4 text-muted-foreground text-xs">Outros produtos</div>
 				<div class="mt-1.5 flex flex-wrap gap-1.5">
+					<AnimatePresence>
 					{#each rest as p (p.id)}
-						<button
+						<motion.button
+							animate={{ opacity: 1, scale: 1 }}
 							class="cursor-pointer rounded-full transition-opacity hover:opacity-80"
-							onclick={(e) => highlightProduct(e, p)}
+							exit={{ opacity: 0, scale: 0.9 }}
+							initial={{ opacity: 0, scale: 0.9 }}
+							key={p.id}
+							onclick={(e: MouseEvent) => highlightProduct(e, p)}
+							transition={{ duration: 0.16 }}
 							type="button"
 						>
 							<ProductChip
@@ -89,8 +95,9 @@
 								product={p}
 								variant="tag"
 							/>
-						</button>
+						</motion.button>
 					{/each}
+					</AnimatePresence>
 				</div>
 			{/if}
 		{:else}

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { motion } from "@humanspeak/svelte-motion";
 	import { QueryClientProvider } from "@tanstack/svelte-query";
 	import { SvelteQueryDevtools } from "@tanstack/svelte-query-devtools";
 	import { goto, onNavigate } from "$app/navigation";
@@ -65,7 +66,12 @@
 			/>
 		</div>
 	{:else if isAuthorized && isPendingApproval}
-		<div class="flex h-svh flex-col items-center justify-center gap-4 px-4 text-center">
+		<motion.div
+			animate={{ opacity: 1, y: 0 }}
+			class="flex h-svh flex-col items-center justify-center gap-4 px-4 text-center"
+			initial={{ opacity: 0, y: 8 }}
+			transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+		>
 			<p class="max-w-sm text-sm text-muted-foreground">
 				{approvalStatus === "rejected"
 					? "Seu cadastro não foi aprovado. Fale com a equipe da matilha."
@@ -78,7 +84,7 @@
 			>
 				Sair
 			</button>
-		</div>
+		</motion.div>
 	{:else if isAuthorized}
 		<div class="grid h-svh grid-rows-[auto_1fr]">
 			<Header />

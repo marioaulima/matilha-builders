@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { motion } from "@humanspeak/svelte-motion";
+	import { AnimatePresence, motion } from "@humanspeak/svelte-motion";
 	import { createForm } from "@tanstack/svelte-form";
 	import { z } from "zod";
 	import { goto } from "$app/navigation";
@@ -74,13 +74,20 @@
 				form.handleSubmit();
 			}}
 		>
+			<AnimatePresence>
 			{#if pendingMessage}
-				<div
+				<motion.div
+					animate={{ opacity: 1, y: 0 }}
 					class="rounded-md border border-status-validating/30 bg-status-validating/10 px-3 py-2 text-sm text-status-validating"
+					exit={{ opacity: 0, y: -6 }}
+					initial={{ opacity: 0, y: -6 }}
+					key="pending-message"
+					transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
 				>
 					{pendingMessage}
-				</div>
+				</motion.div>
 			{/if}
+			</AnimatePresence>
 
 			<form.Field name="email">
 				{#snippet children(field)}

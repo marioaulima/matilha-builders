@@ -82,27 +82,27 @@
 			class="absolute inset-0 flex items-center justify-center rounded-full bg-black/0 opacity-0 transition-all duration-200 group-hover/avatar:bg-black/50 group-hover/avatar:opacity-100"
 		>
 			<AnimatePresence mode="wait">
-			{#if $isUploading}
-				<motion.span
-					animate={{ opacity: 1, scale: 1 }}
-					exit={{ opacity: 0, scale: 0.8 }}
-					initial={{ opacity: 0, scale: 0.8 }}
-					key="loading"
-					transition={{ duration: 0.15 }}
-				>
-					<LoaderCircleIcon class="size-4 animate-spin text-white" />
-				</motion.span>
-			{:else}
-				<motion.span
-					animate={{ opacity: 1, scale: 1 }}
-					exit={{ opacity: 0, scale: 0.8 }}
-					initial={{ opacity: 0, scale: 0.8 }}
-					key="pencil"
-					transition={{ duration: 0.15 }}
-				>
-					<PencilIcon class="size-4 text-white" />
-				</motion.span>
-			{/if}
+				{#if $isUploading}
+					<motion.span
+						animate={{ opacity: 1, scale: 1 }}
+						exit={{ opacity: 0, scale: 0.8 }}
+						initial={{ opacity: 0, scale: 0.8 }}
+						key="loading"
+						transition={{ duration: 0.15 }}
+					>
+						<LoaderCircleIcon class="size-4 animate-spin text-white" />
+					</motion.span>
+				{:else}
+					<motion.span
+						animate={{ opacity: 1, scale: 1 }}
+						exit={{ opacity: 0, scale: 0.8 }}
+						initial={{ opacity: 0, scale: 0.8 }}
+						key="pencil"
+						transition={{ duration: 0.15 }}
+					>
+						<PencilIcon class="size-4 text-white" />
+					</motion.span>
+				{/if}
 			</AnimatePresence>
 		</span>
 	</button>
@@ -115,27 +115,27 @@
 		type="button"
 	>
 		<AnimatePresence mode="wait">
-		{#if $isUploading}
-			<motion.span
-				animate={{ opacity: 1, scale: 1 }}
-				exit={{ opacity: 0, scale: 0.8 }}
-				initial={{ opacity: 0, scale: 0.8 }}
-				key="loading"
-				transition={{ duration: 0.15 }}
-			>
-				<LoaderCircleIcon class="size-3.5 animate-spin" />
-			</motion.span>
-		{:else}
-			<motion.span
-				animate={{ opacity: 1, scale: 1 }}
-				exit={{ opacity: 0, scale: 0.8 }}
-				initial={{ opacity: 0, scale: 0.8 }}
-				key="add"
-				transition={{ duration: 0.15 }}
-			>
-				<ImagePlusIcon class="size-3.5" />
-			</motion.span>
-		{/if}
+			{#if $isUploading}
+				<motion.span
+					animate={{ opacity: 1, scale: 1 }}
+					exit={{ opacity: 0, scale: 0.8 }}
+					initial={{ opacity: 0, scale: 0.8 }}
+					key="loading"
+					transition={{ duration: 0.15 }}
+				>
+					<LoaderCircleIcon class="size-3.5 animate-spin" />
+				</motion.span>
+			{:else}
+				<motion.span
+					animate={{ opacity: 1, scale: 1 }}
+					exit={{ opacity: 0, scale: 0.8 }}
+					initial={{ opacity: 0, scale: 0.8 }}
+					key="add"
+					transition={{ duration: 0.15 }}
+				>
+					<ImagePlusIcon class="size-3.5" />
+				</motion.span>
+			{/if}
 		</AnimatePresence>
 	</button>
 {:else}

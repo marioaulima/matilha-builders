@@ -75,18 +75,18 @@
 			}}
 		>
 			<AnimatePresence>
-			{#if pendingMessage}
-				<motion.div
-					animate={{ opacity: 1, y: 0 }}
-					class="rounded-md border border-status-validating/30 bg-status-validating/10 px-3 py-2 text-sm text-status-validating"
-					exit={{ opacity: 0, y: -6 }}
-					initial={{ opacity: 0, y: -6 }}
-					key="pending-message"
-					transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-				>
-					{pendingMessage}
-				</motion.div>
-			{/if}
+				{#if pendingMessage}
+					<motion.div
+						animate={{ opacity: 1, y: 0 }}
+						class="rounded-md border border-status-validating/30 bg-status-validating/10 px-3 py-2 text-sm text-status-validating"
+						exit={{ opacity: 0, y: -6 }}
+						initial={{ opacity: 0, y: -6 }}
+						key="pending-message"
+						transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+					>
+						{pendingMessage}
+					</motion.div>
+				{/if}
 			</AnimatePresence>
 
 			<form.Field name="email">

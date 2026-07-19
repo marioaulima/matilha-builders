@@ -159,7 +159,7 @@
 				...old,
 				products: old.products.map((p) =>
 					p.id === context.optimisticId
-						? ({ ...(data as ProductItem), _key: context.optimisticId })
+						? { ...(data as ProductItem), _key: context.optimisticId }
 						: p
 				),
 			}));
@@ -567,7 +567,9 @@
 						class="size-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180"
 					/>
 				</Collapsible.Trigger>
-				<Collapsible.Content class="overflow-hidden data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
+				<Collapsible.Content
+					class="overflow-hidden data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down"
+				>
 					<div class="pt-3">
 						{#if isOwnProfile}
 							<div class="mb-2.5 flex justify-end">
@@ -588,289 +590,131 @@
 						{/if}
 
 						<AnimatePresence>
-				{#if isOwnProfile && showAddProduct && founder.products.length < MAX_PRODUCTS_PER_FOUNDER}
-					<motion.div
-						animate={{ opacity: 1, y: 0 }}
-						exit={{ opacity: 0, y: -6 }}
-						initial={{ opacity: 0, y: -6 }}
-						key="add-product-panel"
-						transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-					>
-						<Card class="mb-3 border border-border p-4">
-							<form
-								class="flex flex-col gap-3"
-								onsubmit={(e) => {
+							{#if isOwnProfile && showAddProduct && founder.products.length < MAX_PRODUCTS_PER_FOUNDER}
+								<motion.div
+									animate={{ opacity: 1, y: 0 }}
+									exit={{ opacity: 0, y: -6 }}
+									initial={{ opacity: 0, y: -6 }}
+									key="add-product-panel"
+									transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+								>
+									<Card class="mb-3 border border-border p-4">
+										<form
+											class="flex flex-col gap-3"
+											onsubmit={(e) => {
 							e.preventDefault();
 							e.stopPropagation();
 							addProductForm.handleSubmit();
 						}}
-							>
-								<addProductForm.Field name="name">
-									{#snippet children(field)}
-										<Field
-											error={field.state.meta.isTouched
+										>
+											<addProductForm.Field name="name">
+												{#snippet children(field)}
+													<Field
+														error={field.state.meta.isTouched
 										? field.state.meta.errors[0]?.message
 										: undefined}
-											htmlFor={field.name}
-											label="Nome do produto"
-										>
-											<Input
-												id={field.name}
-												name={field.name}
-												onblur={field.handleBlur}
-												oninput={(e: Event) =>
+														htmlFor={field.name}
+														label="Nome do produto"
+													>
+														<Input
+															id={field.name}
+															name={field.name}
+															onblur={field.handleBlur}
+															oninput={(e: Event) =>
 											field.handleChange((e.target as HTMLInputElement).value)}
-												placeholder="ex: Matilha Builders"
-												value={field.state.value}
-											/>
-										</Field>
-									{/snippet}
-								</addProductForm.Field>
-								<addProductForm.Field name="link">
-									{#snippet children(field)}
-										<Field
-											error={field.state.meta.isTouched
+															placeholder="ex: Matilha Builders"
+															value={field.state.value}
+														/>
+													</Field>
+												{/snippet}
+											</addProductForm.Field>
+											<addProductForm.Field name="link">
+												{#snippet children(field)}
+													<Field
+														error={field.state.meta.isTouched
 										? field.state.meta.errors[0]?.message
 										: undefined}
-											hint="opcional"
-											htmlFor={field.name}
-											label="Link"
-										>
-											<Input
-												id={field.name}
-												name={field.name}
-												onblur={field.handleBlur}
-												oninput={(e: Event) =>
+														hint="opcional"
+														htmlFor={field.name}
+														label="Link"
+													>
+														<Input
+															id={field.name}
+															name={field.name}
+															onblur={field.handleBlur}
+															oninput={(e: Event) =>
 											field.handleChange((e.target as HTMLInputElement).value)}
-												placeholder="https://..."
-												value={field.state.value}
-											/>
-										</Field>
-									{/snippet}
-								</addProductForm.Field>
-								<addProductForm.Field name="icp">
-									{#snippet children(field)}
-										<Field hint="opcional" htmlFor={field.name} label="ICP">
-											<Textarea
-												id={field.name}
-												name={field.name}
-												onblur={field.handleBlur}
-												oninput={(e: Event) =>
+															placeholder="https://..."
+															value={field.state.value}
+														/>
+													</Field>
+												{/snippet}
+											</addProductForm.Field>
+											<addProductForm.Field name="icp">
+												{#snippet children(field)}
+													<Field
+														hint="opcional"
+														htmlFor={field.name}
+														label="ICP"
+													>
+														<Textarea
+															id={field.name}
+															name={field.name}
+															onblur={field.handleBlur}
+															oninput={(e: Event) =>
 											field.handleChange((e.target as HTMLTextAreaElement).value)}
-												placeholder="Quem é o cliente ideal desse produto"
-												rows={2}
-												value={field.state.value}
-											/>
-										</Field>
-									{/snippet}
-								</addProductForm.Field>
-								<addProductForm.Field name="painPoint">
-									{#snippet children(field)}
-										<Field
-											hint="opcional"
-											htmlFor={field.name}
-											label="Dor a ser resolvida"
-										>
-											<Textarea
-												id={field.name}
-												name={field.name}
-												onblur={field.handleBlur}
-												oninput={(e: Event) =>
+															placeholder="Quem é o cliente ideal desse produto"
+															rows={2}
+															value={field.state.value}
+														/>
+													</Field>
+												{/snippet}
+											</addProductForm.Field>
+											<addProductForm.Field name="painPoint">
+												{#snippet children(field)}
+													<Field
+														hint="opcional"
+														htmlFor={field.name}
+														label="Dor a ser resolvida"
+													>
+														<Textarea
+															id={field.name}
+															name={field.name}
+															onblur={field.handleBlur}
+															oninput={(e: Event) =>
 											field.handleChange((e.target as HTMLTextAreaElement).value)}
-												placeholder="Qual problema esse produto resolve"
-												rows={2}
-												value={field.state.value}
-											/>
-										</Field>
-									{/snippet}
-								</addProductForm.Field>
-								<addProductForm.Field name="solution">
-									{#snippet children(field)}
-										<Field hint="opcional" htmlFor={field.name} label="Solução">
-											<Textarea
-												id={field.name}
-												name={field.name}
-												onblur={field.handleBlur}
-												oninput={(e: Event) =>
+															placeholder="Qual problema esse produto resolve"
+															rows={2}
+															value={field.state.value}
+														/>
+													</Field>
+												{/snippet}
+											</addProductForm.Field>
+											<addProductForm.Field name="solution">
+												{#snippet children(field)}
+													<Field
+														hint="opcional"
+														htmlFor={field.name}
+														label="Solução"
+													>
+														<Textarea
+															id={field.name}
+															name={field.name}
+															onblur={field.handleBlur}
+															oninput={(e: Event) =>
 											field.handleChange((e.target as HTMLTextAreaElement).value)}
-												placeholder="Como o produto resolve essa dor"
-												rows={2}
-												value={field.state.value}
-											/>
-										</Field>
-									{/snippet}
-								</addProductForm.Field>
-								<addProductForm.Subscribe
-									selector={(state: typeof addProductForm.state): SubmitState => ({
+															placeholder="Como o produto resolve essa dor"
+															rows={2}
+															value={field.state.value}
+														/>
+													</Field>
+												{/snippet}
+											</addProductForm.Field>
+											<addProductForm.Subscribe
+												selector={(state: typeof addProductForm.state): SubmitState => ({
 								canSubmit: state.canSubmit,
 								isSubmitting: state.isSubmitting,
 							})}
-								>
-									{#snippet children(state: SubmitState)}
-										<Button
-											disabled={!state.canSubmit || state.isSubmitting}
-											size="sm"
-											type="submit"
-										>
-											{state.isSubmitting ? "Salvando..." : "Adicionar produto"}
-										</Button>
-									{/snippet}
-								</addProductForm.Subscribe>
-								<AnimatePresence>
-									{#if createProduct.isError}
-										<motion.p
-											animate={{ opacity: 1, y: 0 }}
-											class="text-destructive text-xs"
-											exit={{ opacity: 0, y: -4 }}
-											initial={{ opacity: 0, y: -4 }}
-											key="create-product-error"
-											transition={{ duration: 0.15 }}
-										>
-											{createProduct.error.message}
-										</motion.p>
-									{/if}
-								</AnimatePresence>
-							</form>
-						</Card>
-					</motion.div>
-				{/if}
-			</AnimatePresence>
-
-			{#if founder.products.length}
-				<div class="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-3">
-					<AnimatePresence>
-						{#each founder.products as p (p._key ?? p.id)}
-							<motion.div
-								animate={{ opacity: 1, scale: 1, y: 0 }}
-								class="flex flex-col gap-4 rounded-xl border border-border p-4"
-								exit={{ opacity: 0, scale: 0.96 }}
-								initial={{ opacity: 0, scale: 0.96, y: 8 }}
-								key={p._key ?? p.id}
-								transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-							>
-								{#if editingId === p.id}
-									<form
-										class="flex flex-col gap-3"
-										onsubmit={(e) => {
-										e.preventDefault();
-										e.stopPropagation();
-										editProductForm.handleSubmit();
-									}}
-									>
-										<editProductForm.Field name="name">
-											{#snippet children(field)}
-												<Field
-													error={field.state.meta.isTouched
-													? field.state.meta.errors[0]?.message
-													: undefined}
-													htmlFor={field.name}
-													label="Nome do produto"
-												>
-													<Input
-														id={field.name}
-														name={field.name}
-														onblur={field.handleBlur}
-														oninput={(e: Event) =>
-														field.handleChange(
-															(e.target as HTMLInputElement).value
-														)}
-														value={field.state.value}
-													/>
-												</Field>
-											{/snippet}
-										</editProductForm.Field>
-										<editProductForm.Field name="link">
-											{#snippet children(field)}
-												<Field
-													error={field.state.meta.isTouched
-													? field.state.meta.errors[0]?.message
-													: undefined}
-													hint="opcional"
-													htmlFor={field.name}
-													label="Link"
-												>
-													<Input
-														id={field.name}
-														name={field.name}
-														onblur={field.handleBlur}
-														oninput={(e: Event) =>
-														field.handleChange(
-															(e.target as HTMLInputElement).value
-														)}
-														placeholder="https://..."
-														value={field.state.value}
-													/>
-												</Field>
-											{/snippet}
-										</editProductForm.Field>
-										<editProductForm.Field name="icp">
-											{#snippet children(field)}
-												<Field hint="opcional" htmlFor={field.name} label="ICP">
-													<Textarea
-														id={field.name}
-														name={field.name}
-														onblur={field.handleBlur}
-														oninput={(e: Event) =>
-														field.handleChange(
-															(e.target as HTMLTextAreaElement).value
-														)}
-														placeholder="Quem é o cliente ideal desse produto"
-														rows={2}
-														value={field.state.value}
-													/>
-												</Field>
-											{/snippet}
-										</editProductForm.Field>
-										<editProductForm.Field name="painPoint">
-											{#snippet children(field)}
-												<Field
-													hint="opcional"
-													htmlFor={field.name}
-													label="Dor a ser resolvida"
-												>
-													<Textarea
-														id={field.name}
-														name={field.name}
-														onblur={field.handleBlur}
-														oninput={(e: Event) =>
-														field.handleChange(
-															(e.target as HTMLTextAreaElement).value
-														)}
-														placeholder="Qual problema esse produto resolve"
-														rows={2}
-														value={field.state.value}
-													/>
-												</Field>
-											{/snippet}
-										</editProductForm.Field>
-										<editProductForm.Field name="solution">
-											{#snippet children(field)}
-												<Field
-													hint="opcional"
-													htmlFor={field.name}
-													label="Solução"
-												>
-													<Textarea
-														id={field.name}
-														name={field.name}
-														onblur={field.handleBlur}
-														oninput={(e: Event) =>
-														field.handleChange(
-															(e.target as HTMLTextAreaElement).value
-														)}
-														placeholder="Como o produto resolve essa dor"
-														rows={2}
-														value={field.state.value}
-													/>
-												</Field>
-											{/snippet}
-										</editProductForm.Field>
-										<div class="flex gap-2">
-											<editProductForm.Subscribe
-												selector={(state: typeof editProductForm.state): SubmitState => ({
-												canSubmit: state.canSubmit,
-												isSubmitting: state.isSubmitting,
-											})}
 											>
 												{#snippet children(state: SubmitState)}
 													<Button
@@ -878,128 +722,304 @@
 														size="sm"
 														type="submit"
 													>
-														{state.isSubmitting ? "Salvando..." : "Salvar"}
+														{state.isSubmitting ? "Salvando..." : "Adicionar produto"}
 													</Button>
 												{/snippet}
-											</editProductForm.Subscribe>
-											<Button
-												onclick={cancelEdit}
-												size="sm"
-												type="button"
-												variant="outline"
-											>
-												Cancelar
-											</Button>
-										</div>
-									</form>
-								{:else}
-									<ProductChip
-										product={{
+											</addProductForm.Subscribe>
+											<AnimatePresence>
+												{#if createProduct.isError}
+													<motion.p
+														animate={{ opacity: 1, y: 0 }}
+														class="text-destructive text-xs"
+														exit={{ opacity: 0, y: -4 }}
+														initial={{ opacity: 0, y: -4 }}
+														key="create-product-error"
+														transition={{ duration: 0.15 }}
+													>
+														{createProduct.error.message}
+													</motion.p>
+												{/if}
+											</AnimatePresence>
+										</form>
+									</Card>
+								</motion.div>
+							{/if}
+						</AnimatePresence>
+
+						{#if founder.products.length}
+							<div
+								class="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-3"
+							>
+								<AnimatePresence>
+									{#each founder.products as p (p._key ?? p.id)}
+										<motion.div
+											animate={{ opacity: 1, scale: 1, y: 0 }}
+											class="flex flex-col gap-4 rounded-xl border border-border p-4"
+											exit={{ opacity: 0, scale: 0.96 }}
+											initial={{ opacity: 0, scale: 0.96, y: 8 }}
+											key={p._key ?? p.id}
+											transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+										>
+											{#if editingId === p.id}
+												<form
+													class="flex flex-col gap-3"
+													onsubmit={(e) => {
+										e.preventDefault();
+										e.stopPropagation();
+										editProductForm.handleSubmit();
+									}}
+												>
+													<editProductForm.Field name="name">
+														{#snippet children(field)}
+															<Field
+																error={field.state.meta.isTouched
+													? field.state.meta.errors[0]?.message
+													: undefined}
+																htmlFor={field.name}
+																label="Nome do produto"
+															>
+																<Input
+																	id={field.name}
+																	name={field.name}
+																	onblur={field.handleBlur}
+																	oninput={(e: Event) =>
+														field.handleChange(
+															(e.target as HTMLInputElement).value
+														)}
+																	value={field.state.value}
+																/>
+															</Field>
+														{/snippet}
+													</editProductForm.Field>
+													<editProductForm.Field name="link">
+														{#snippet children(field)}
+															<Field
+																error={field.state.meta.isTouched
+													? field.state.meta.errors[0]?.message
+													: undefined}
+																hint="opcional"
+																htmlFor={field.name}
+																label="Link"
+															>
+																<Input
+																	id={field.name}
+																	name={field.name}
+																	onblur={field.handleBlur}
+																	oninput={(e: Event) =>
+														field.handleChange(
+															(e.target as HTMLInputElement).value
+														)}
+																	placeholder="https://..."
+																	value={field.state.value}
+																/>
+															</Field>
+														{/snippet}
+													</editProductForm.Field>
+													<editProductForm.Field name="icp">
+														{#snippet children(field)}
+															<Field
+																hint="opcional"
+																htmlFor={field.name}
+																label="ICP"
+															>
+																<Textarea
+																	id={field.name}
+																	name={field.name}
+																	onblur={field.handleBlur}
+																	oninput={(e: Event) =>
+														field.handleChange(
+															(e.target as HTMLTextAreaElement).value
+														)}
+																	placeholder="Quem é o cliente ideal desse produto"
+																	rows={2}
+																	value={field.state.value}
+																/>
+															</Field>
+														{/snippet}
+													</editProductForm.Field>
+													<editProductForm.Field name="painPoint">
+														{#snippet children(field)}
+															<Field
+																hint="opcional"
+																htmlFor={field.name}
+																label="Dor a ser resolvida"
+															>
+																<Textarea
+																	id={field.name}
+																	name={field.name}
+																	onblur={field.handleBlur}
+																	oninput={(e: Event) =>
+														field.handleChange(
+															(e.target as HTMLTextAreaElement).value
+														)}
+																	placeholder="Qual problema esse produto resolve"
+																	rows={2}
+																	value={field.state.value}
+																/>
+															</Field>
+														{/snippet}
+													</editProductForm.Field>
+													<editProductForm.Field name="solution">
+														{#snippet children(field)}
+															<Field
+																hint="opcional"
+																htmlFor={field.name}
+																label="Solução"
+															>
+																<Textarea
+																	id={field.name}
+																	name={field.name}
+																	onblur={field.handleBlur}
+																	oninput={(e: Event) =>
+														field.handleChange(
+															(e.target as HTMLTextAreaElement).value
+														)}
+																	placeholder="Como o produto resolve essa dor"
+																	rows={2}
+																	value={field.state.value}
+																/>
+															</Field>
+														{/snippet}
+													</editProductForm.Field>
+													<div class="flex gap-2">
+														<editProductForm.Subscribe
+															selector={(state: typeof editProductForm.state): SubmitState => ({
+												canSubmit: state.canSubmit,
+												isSubmitting: state.isSubmitting,
+											})}
+														>
+															{#snippet children(state: SubmitState)}
+																<Button
+																	disabled={!state.canSubmit || state.isSubmitting}
+																	size="sm"
+																	type="submit"
+																>
+																	{state.isSubmitting ? "Salvando..." : "Salvar"}
+																</Button>
+															{/snippet}
+														</editProductForm.Subscribe>
+														<Button
+															onclick={cancelEdit}
+															size="sm"
+															type="button"
+															variant="outline"
+														>
+															Cancelar
+														</Button>
+													</div>
+												</form>
+											{:else}
+												<ProductChip
+													product={{
 											...p,
 											imageUrl: productPreviews[p.id] ?? p.imageUrl,
 										}}
-										showStatus={!isOwnProfile}
-										size="md"
-										variant="cover"
-									/>
-									{#if isOwnProfile}
-										<Field label="Status">
-											<Select.Root
-												onValueChange={(v) =>
+													showStatus={!isOwnProfile}
+													size="md"
+													variant="cover"
+												/>
+												{#if isOwnProfile}
+													<Field label="Status">
+														<Select.Root
+															onValueChange={(v) =>
 												updateProductStatus.mutate({
 													id: p.id,
 													status: v as "validating" | "building" | "launched",
 												})}
-												type="single"
-												value={p.status}
-											>
-												<Select.Trigger class="w-full text-xs" size="sm">
-													{p.status === "validating"
+															type="single"
+															value={p.status}
+														>
+															<Select.Trigger class="w-full text-xs" size="sm">
+																{p.status === "validating"
 													? "Validando"
 													: p.status === "building"
 														? "Construindo"
 														: "Lançado"}
-												</Select.Trigger>
-												<Select.Content>
-													<Select.Item label="Validando" value="validating"
-														>Validando</Select.Item
-													>
-													<Select.Item label="Construindo" value="building"
-														>Construindo</Select.Item
-													>
-													<Select.Item label="Lançado" value="launched"
-														>Lançado</Select.Item
-													>
-												</Select.Content>
-											</Select.Root>
-										</Field>
+															</Select.Trigger>
+															<Select.Content>
+																<Select.Item
+																	label="Validando"
+																	value="validating"
+																	>Validando</Select.Item
+																>
+																<Select.Item
+																	label="Construindo"
+																	value="building"
+																	>Construindo</Select.Item
+																>
+																<Select.Item label="Lançado" value="launched"
+																	>Lançado</Select.Item
+																>
+															</Select.Content>
+														</Select.Root>
+													</Field>
 
-										<AnimatePresence mode="wait">
-											{#if confirmDeleteId === p.id}
-												<motion.div
-													animate={{ opacity: 1 }}
-													class="flex items-center gap-2"
-													exit={{ opacity: 0 }}
-													initial={{ opacity: 0 }}
-													key="confirm"
-													transition={{ duration: 0.15 }}
-												>
-													<Button
-														class="h-8"
-														disabled={deleteProduct.isPending}
-														onclick={() => deleteProduct.mutate({ id: p.id })}
-														size="sm"
-														variant="destructive"
-													>
-														{deleteProduct.isPending
+													<AnimatePresence mode="wait">
+														{#if confirmDeleteId === p.id}
+															<motion.div
+																animate={{ opacity: 1 }}
+																class="flex items-center gap-2"
+																exit={{ opacity: 0 }}
+																initial={{ opacity: 0 }}
+																key="confirm"
+																transition={{ duration: 0.15 }}
+															>
+																<Button
+																	class="h-8"
+																	disabled={deleteProduct.isPending}
+																	onclick={() => deleteProduct.mutate({ id: p.id })}
+																	size="sm"
+																	variant="destructive"
+																>
+																	{deleteProduct.isPending
 													? "Excluindo..."
 													: "Confirmar exclusão"}
-													</Button>
-													<button
-														class="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
-														onclick={() => (confirmDeleteId = null)}
-														type="button"
-													>
-														cancelar
-													</button>
-												</motion.div>
-											{:else}
-												<motion.div
-													animate={{ opacity: 1 }}
-													class="flex items-center gap-2"
-													exit={{ opacity: 0 }}
-													initial={{ opacity: 0 }}
-													key="actions"
-													transition={{ duration: 0.15 }}
-												>
-													<button
-														class="flex h-8 items-center gap-1.5 rounded-md border border-border px-2.5 text-xs transition-colors hover:bg-accent"
-														onclick={() =>
+																</Button>
+																<button
+																	class="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
+																	onclick={() => (confirmDeleteId = null)}
+																	type="button"
+																>
+																	cancelar
+																</button>
+															</motion.div>
+														{:else}
+															<motion.div
+																animate={{ opacity: 1 }}
+																class="flex items-center gap-2"
+																exit={{ opacity: 0 }}
+																initial={{ opacity: 0 }}
+																key="actions"
+																transition={{ duration: 0.15 }}
+															>
+																<button
+																	class="flex h-8 items-center gap-1.5 rounded-md border border-border px-2.5 text-xs transition-colors hover:bg-accent"
+																	onclick={() =>
 													toggleFeatured(p.id, founder.featuredProductId)}
-														title={founder.featuredProductId === p.id
+																	title={founder.featuredProductId === p.id
 													? "Remover destaque"
 													: "Destacar no board"}
-														type="button"
-														class:border-streak={founder.featuredProductId === p.id}
-														class:text-streak={founder.featuredProductId === p.id}
-													>
-														<StarIcon
-															class="size-3.5"
-															fill={founder.featuredProductId === p.id
+																	type="button"
+																	class:border-streak={founder.featuredProductId === p.id}
+																	class:text-streak={founder.featuredProductId === p.id}
+																>
+																	<StarIcon
+																		class="size-3.5"
+																		fill={founder.featuredProductId === p.id
 														? "currentColor"
 														: "none"}
-														/>
-														{founder.featuredProductId === p.id
+																	/>
+																	{founder.featuredProductId === p.id
 													? "Produto destacado"
 													: "Destacar produto"}
-													</button>
-													<div class="ml-auto flex items-center gap-2">
-														<ImageUploadButton
-															endpoint="productImageUploader"
-															iconOnly
-															input={{ productId: p.id }}
-															label="Trocar foto do produto"
-															onPreview={(url) => {
+																</button>
+																<div class="ml-auto flex items-center gap-2">
+																	<ImageUploadButton
+																		endpoint="productImageUploader"
+																		iconOnly
+																		input={{ productId: p.id }}
+																		label="Trocar foto do produto"
+																		onPreview={(url) => {
 																if (url) {
 																	productPreviews = {
 																		...productPreviews,
@@ -1011,39 +1031,39 @@
 																	productPreviews = rest;
 																}
 															}}
-															onUploaded={refetchFounder}
-														/>
-														<button
-															class="flex size-8 items-center justify-center rounded-md border border-border transition-colors hover:bg-accent"
-															onclick={() => startEdit(p)}
-															title="Editar produto"
-															type="button"
-														>
-															<PencilIcon class="size-3.5" />
-														</button>
-														<button
-															class="flex size-8 items-center justify-center rounded-md border border-border text-destructive transition-colors hover:bg-destructive/10"
-															onclick={() => (confirmDeleteId = p.id)}
-															title="Excluir produto"
-															type="button"
-														>
-															<Trash2Icon class="size-3.5" />
-														</button>
-													</div>
-												</motion.div>
+																		onUploaded={refetchFounder}
+																	/>
+																	<button
+																		class="flex size-8 items-center justify-center rounded-md border border-border transition-colors hover:bg-accent"
+																		onclick={() => startEdit(p)}
+																		title="Editar produto"
+																		type="button"
+																	>
+																		<PencilIcon class="size-3.5" />
+																	</button>
+																	<button
+																		class="flex size-8 items-center justify-center rounded-md border border-border text-destructive transition-colors hover:bg-destructive/10"
+																		onclick={() => (confirmDeleteId = p.id)}
+																		title="Excluir produto"
+																		type="button"
+																	>
+																		<Trash2Icon class="size-3.5" />
+																	</button>
+																</div>
+															</motion.div>
+														{/if}
+													</AnimatePresence>
+												{/if}
 											{/if}
-										</AnimatePresence>
-									{/if}
-								{/if}
-							</motion.div>
-						{/each}
-					</AnimatePresence>
-				</div>
-			{:else}
-				<p class="text-sm text-muted-foreground">
-					{isOwnProfile ? "Cadastra teu primeiro produto." : "Sem produtos ainda."}
-				</p>
-			{/if}
+										</motion.div>
+									{/each}
+								</AnimatePresence>
+							</div>
+						{:else}
+							<p class="text-sm text-muted-foreground">
+								{isOwnProfile ? "Cadastra teu primeiro produto." : "Sem produtos ainda."}
+							</p>
+						{/if}
 					</div>
 				</Collapsible.Content>
 			</Collapsible.Root>
@@ -1066,7 +1086,9 @@
 					class="size-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180"
 				/>
 			</Collapsible.Trigger>
-			<Collapsible.Content class="overflow-hidden data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
+			<Collapsible.Content
+				class="overflow-hidden data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down"
+			>
 				<div class="flex flex-col gap-3 pt-3">
 					{#if historyQuery.data?.length}
 						{#each historyQuery.data as ci, index (ci.id)}

@@ -49,9 +49,7 @@
 		return { snapshot };
 	}
 
-	function restorePending(
-		snapshot: PendingData | undefined
-	) {
+	function restorePending(snapshot: PendingData | undefined) {
 		if (snapshot) {
 			queryClient.setQueryData(pendingQueryKey(), snapshot);
 		}
@@ -101,46 +99,48 @@
 	{:else}
 		<div class="flex flex-col gap-3">
 			<AnimatePresence>
-			{#each pendingQuery.data as request (request.userId)}
-				<motion.div
-					animate={{ opacity: 1, scale: 1, y: 0 }}
-					class="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between"
-					exit={{ opacity: 0, scale: 0.97 }}
-					initial={{ opacity: 0, y: 8 }}
-					key={request.userId}
-					transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-				>
-					<div class="flex flex-col gap-0.5">
-						<span class="text-sm font-semibold">{request.name}</span>
-						<span class="text-xs text-muted-foreground">{request.email}</span>
-						{#if request.phone}
-							<span class="text-xs text-muted-foreground">{request.phone}</span>
-						{/if}
-						{#if request.interest}
-							<span class="mt-1 text-xs text-streak"
-								>{interestLabels[request.interest]}</span
+				{#each pendingQuery.data as request (request.userId)}
+					<motion.div
+						animate={{ opacity: 1, scale: 1, y: 0 }}
+						class="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between"
+						exit={{ opacity: 0, scale: 0.97 }}
+						initial={{ opacity: 0, y: 8 }}
+						key={request.userId}
+						transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+					>
+						<div class="flex flex-col gap-0.5">
+							<span class="text-sm font-semibold">{request.name}</span>
+							<span class="text-xs text-muted-foreground">{request.email}</span>
+							{#if request.phone}
+								<span class="text-xs text-muted-foreground"
+									>{request.phone}</span
+								>
+							{/if}
+							{#if request.interest}
+								<span class="mt-1 text-xs text-streak"
+									>{interestLabels[request.interest]}</span
+								>
+							{/if}
+						</div>
+						<div class="flex gap-2">
+							<Button
+								disabled={rejectUser.isPending}
+								onclick={() => rejectUser.mutate({ userId: request.userId })}
+								size="sm"
+								variant="outline"
 							>
-						{/if}
-					</div>
-					<div class="flex gap-2">
-						<Button
-							disabled={rejectUser.isPending}
-							onclick={() => rejectUser.mutate({ userId: request.userId })}
-							size="sm"
-							variant="outline"
-						>
-							Recusar
-						</Button>
-						<Button
-							disabled={approveUser.isPending}
-							onclick={() => approveUser.mutate({ userId: request.userId })}
-							size="sm"
-						>
-							Aprovar
-						</Button>
-					</div>
-				</motion.div>
-			{/each}
+								Recusar
+							</Button>
+							<Button
+								disabled={approveUser.isPending}
+								onclick={() => approveUser.mutate({ userId: request.userId })}
+								size="sm"
+							>
+								Aprovar
+							</Button>
+						</div>
+					</motion.div>
+				{/each}
 			</AnimatePresence>
 		</div>
 	{/if}

@@ -74,7 +74,7 @@
 						feedSnapshot: FeedItem[] | undefined;
 						founderId: string;
 						historySnapshot: HistoryItem[] | undefined;
-					}
+				  }
 				| undefined
 		) => {
 			if (!context) {

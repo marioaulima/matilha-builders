@@ -243,8 +243,10 @@
 			{/if}
 		</div>
 		{@render caption()}
-		{#if hasDetails}
-			{@render detailsDrawer()}
-		{/if}
+		<div class="min-h-5">
+			{#if hasDetails}
+				{@render detailsDrawer()}
+			{/if}
+		</div>
 	</div>
 {/if}

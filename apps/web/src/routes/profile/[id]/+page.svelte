@@ -1009,7 +1009,7 @@
 														{:else}
 															<motion.div
 																animate={{ opacity: 1 }}
-																class="flex items-center gap-2"
+																class="flex flex-wrap items-center gap-2"
 																exit={{ opacity: 0 }}
 																initial={{ opacity: 0 }}
 																key="actions"

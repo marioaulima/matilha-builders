@@ -1,7 +1,9 @@
 <script lang="ts">
+	import MenuIcon from "@lucide/svelte/icons/menu";
 	import PawPrintIcon from "@lucide/svelte/icons/paw-print";
 	import { page } from "$app/state";
 	import { authClient } from "$lib/auth-client";
+	import * as Drawer from "$lib/components/ui/drawer/index.js";
 	import { cn } from "$lib/utils.js";
 	import UserMenu from "./UserMenu.svelte";
 
@@ -20,6 +22,8 @@
 			? [...baseLinks, { href: "/requests", label: "Solicitações" }]
 			: baseLinks
 	);
+
+	let mobileNavOpen = $state(false);
 </script>
 
 <div
@@ -34,9 +38,9 @@
 				href="/board"
 			>
 				<PawPrintIcon class="size-4 text-streak" fill="currentColor" />
-				matilha_builders
+				<span class="hidden sm:inline">matilha_builders</span>
 			</a>
-			<nav class="flex gap-1">
+			<nav class="hidden gap-1 md:flex">
 				{#each links as link (link.href)}
 					<a
 						class={cn(
@@ -52,6 +56,42 @@
 				{/each}
 			</nav>
 		</div>
-		<UserMenu />
+		<div class="flex items-center gap-1">
+			<button
+				aria-label="Abrir menu"
+				class="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground md:hidden"
+				onclick={() => (mobileNavOpen = true)}
+				type="button"
+			>
+				<MenuIcon class="size-5" />
+			</button>
+			<UserMenu />
+		</div>
 	</div>
 </div>
+
+<Drawer.Root bind:open={mobileNavOpen}>
+	<Drawer.Content>
+		<div class="mx-auto w-full max-w-md">
+			<Drawer.Header>
+				<Drawer.Title>Menu</Drawer.Title>
+			</Drawer.Header>
+			<nav class="flex flex-col gap-1 px-4 pb-6">
+				{#each links as link (link.href)}
+					<a
+						class={cn(
+							"rounded-md px-3 py-2.5 text-sm transition-colors",
+							page.url.pathname === link.href
+								? "bg-accent font-semibold text-foreground"
+								: "text-muted-foreground hover:text-foreground"
+						)}
+						href={link.href}
+						onclick={() => (mobileNavOpen = false)}
+					>
+						{link.label}
+					</a>
+				{/each}
+			</nav>
+		</div>
+	</Drawer.Content>
+</Drawer.Root>

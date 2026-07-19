@@ -1,12 +1,12 @@
 import { db } from "@matilha-builders/db";
 import { checkIn, founder, product } from "@matilha-builders/db/schema/matilha";
 import { ORPCError } from "@orpc/server";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, isNotNull, max } from "drizzle-orm";
 import { z } from "zod";
 
 import { protectedProcedure } from "../index";
 import { MAX_PRODUCTS_PER_FOUNDER, PAGE_SIZE } from "../lib/constants";
-import { computeNextStreak } from "../lib/streak";
+import { computeNextStreak, ONE_WEEK_MS } from "../lib/streak";
 
 function paginate<T>(items: T[], cursor: number) {
 	return {
@@ -58,6 +58,26 @@ export const matilhaRouter = {
 				const founderId = context.session.user.id;
 				if (input.productId) {
 					await requireOwnedProduct(input.productId, founderId);
+					const [lastForProduct] = await db
+						.select({ createdAt: checkIn.createdAt })
+						.from(checkIn)
+						.where(
+							and(
+								eq(checkIn.founderId, founderId),
+								eq(checkIn.productId, input.productId)
+							)
+						)
+						.orderBy(desc(checkIn.createdAt))
+						.limit(1);
+					if (
+						lastForProduct &&
+						Date.now() - lastForProduct.createdAt.getTime() < ONE_WEEK_MS
+					) {
+						throw new ORPCError("BAD_REQUEST", {
+							message:
+								"Esse produto já recebeu um check-in essa semana. Espera a semana que vem.",
+						});
+					}
 				}
 				const [profile] = await db
 					.select({
@@ -275,13 +295,41 @@ export const matilhaRouter = {
 				}
 				return { id: row.id };
 			}),
-		mine: protectedProcedure.handler(async ({ context }) =>
-			db
+		mine: protectedProcedure.handler(async ({ context }) => {
+			const founderId = context.session.user.id;
+			const products = await db
 				.select()
 				.from(product)
-				.where(eq(product.founderId, context.session.user.id))
-				.orderBy(desc(product.createdAt))
-		),
+				.where(eq(product.founderId, founderId))
+				.orderBy(desc(product.createdAt));
+			const lastCheckIns = await db
+				.select({
+					lastAt: max(checkIn.createdAt),
+					productId: checkIn.productId,
+				})
+				.from(checkIn)
+				.where(
+					and(eq(checkIn.founderId, founderId), isNotNull(checkIn.productId))
+				)
+				.groupBy(checkIn.productId);
+			const lockStart = new Map(
+				lastCheckIns
+					.filter(
+						(row): row is { lastAt: Date; productId: string } =>
+							!!row.productId && !!row.lastAt
+					)
+					.map((row) => [row.productId, row.lastAt])
+			);
+			const now = Date.now();
+			return products.map((p) => {
+				const lastAt = lockStart.get(p.id);
+				const checkInLockedUntil =
+					lastAt && now - lastAt.getTime() < ONE_WEEK_MS
+						? new Date(lastAt.getTime() + ONE_WEEK_MS)
+						: null;
+				return { ...p, checkInLockedUntil };
+			});
+		}),
 		update: protectedProcedure
 			.input(
 				z.object({

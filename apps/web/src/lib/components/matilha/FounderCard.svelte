@@ -29,11 +29,11 @@
 </script>
 
 <div
-	role="link"
-	tabindex="0"
+	class="block cursor-pointer rounded-lg border border-border bg-card p-4 transition-colors hover:bg-accent/40"
 	onclick={openProfile}
 	onkeydown={onProfileKeydown}
-	class="block cursor-pointer rounded-lg border border-border bg-card p-4 transition-colors hover:bg-accent/40"
+	role="link"
+	tabindex="0"
 >
 	<div class="flex items-start justify-between gap-2">
 		<div>

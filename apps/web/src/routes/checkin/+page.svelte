@@ -1,7 +1,11 @@
 <script lang="ts">
-	import { motion } from "@humanspeak/svelte-motion";
+	import { AnimatePresence, motion } from "@humanspeak/svelte-motion";
 	import { createForm } from "@tanstack/svelte-form";
-	import { createMutation, createQuery } from "@tanstack/svelte-query";
+	import {
+		createMutation,
+		createQuery,
+		useQueryClient,
+	} from "@tanstack/svelte-query";
 	import { z } from "zod";
 	import { authClient } from "$lib/auth-client";
 	import Field from "$lib/components/matilha/Field.svelte";
@@ -14,10 +18,143 @@
 
 	const sessionQuery = authClient.useSession();
 	const productsQuery = createQuery(() => orpc.products.mine.queryOptions());
+	const queryClient = useQueryClient();
 
-	const postCheckIn = createMutation(() =>
-		orpc.checkIns.create.mutationOptions()
-	);
+	type ProductRef = {
+		createdAt: Date;
+		founderId: string;
+		icp: string | null;
+		id: string;
+		imageUrl: string | null;
+		link: string | null;
+		name: string;
+		painPoint: string | null;
+		solution: string | null;
+		status: "building" | "launched" | "validating";
+		updatedAt: Date;
+	};
+	type FeedItem = {
+		avatarUrl: string | null;
+		blocked: string;
+		createdAt: Date;
+		founderId: string;
+		help: string | null;
+		id: string;
+		name: string;
+		product: ProductRef | null;
+		progress: string;
+		streak: number;
+	};
+	type HistoryItem = {
+		blocked: string;
+		createdAt: Date;
+		founderId: string;
+		help: string | null;
+		id: string;
+		product: ProductRef | null;
+		productId: string | null;
+		progress: string;
+	};
+
+	function feedKey() {
+		return orpc.checkIns.listFeed.queryOptions().queryKey;
+	}
+	function historyKey(founderId: string) {
+		return orpc.checkIns.listByFounder.queryOptions({ input: { founderId } })
+			.queryKey;
+	}
+
+	const postCheckIn = createMutation(() => ({
+		...orpc.checkIns.create.mutationOptions(),
+		onError: (
+			_error,
+			_input,
+			context:
+				| {
+						feedSnapshot: FeedItem[] | undefined;
+						founderId: string;
+						historySnapshot: HistoryItem[] | undefined;
+					}
+				| undefined
+		) => {
+			if (!context) {
+				return;
+			}
+			if (context.feedSnapshot) {
+				queryClient.setQueryData(feedKey(), context.feedSnapshot);
+			}
+			if (context.historySnapshot) {
+				queryClient.setQueryData(
+					historyKey(context.founderId),
+					context.historySnapshot
+				);
+			}
+		},
+		onMutate: async (input) => {
+			const founderId = $sessionQuery.data?.user.id ?? "";
+			await queryClient.cancelQueries({ queryKey: feedKey() });
+			await queryClient.cancelQueries({ queryKey: historyKey(founderId) });
+			const feedSnapshot = queryClient.getQueryData<FeedItem[]>(feedKey());
+			const historySnapshot = queryClient.getQueryData<HistoryItem[]>(
+				historyKey(founderId)
+			);
+			const product =
+				(input.productId &&
+					productsQuery.data?.find((p) => p.id === input.productId)) ||
+				null;
+			const optimisticId = `optimistic-${crypto.randomUUID()}`;
+			const createdAt = new Date();
+			queryClient.setQueryData<FeedItem[]>(feedKey(), (old) =>
+				old
+					? [
+							{
+								avatarUrl: null,
+								blocked: input.blocked,
+								createdAt,
+								founderId,
+								help: input.help ?? null,
+								id: optimisticId,
+								name: $sessionQuery.data?.user.name ?? "",
+								product,
+								progress: input.progress,
+								streak: 0,
+							},
+							...old,
+						]
+					: old
+			);
+			queryClient.setQueryData<HistoryItem[]>(historyKey(founderId), (old) =>
+				old
+					? [
+							{
+								blocked: input.blocked,
+								createdAt,
+								founderId,
+								help: input.help ?? null,
+								id: optimisticId,
+								product,
+								productId: input.productId ?? null,
+								progress: input.progress,
+							},
+							...old,
+						]
+					: old
+			);
+			return { feedSnapshot, founderId, historySnapshot };
+		},
+		onSettled: () => {
+			const founderId = $sessionQuery.data?.user.id ?? "";
+			queryClient.invalidateQueries({ queryKey: feedKey() });
+			queryClient.invalidateQueries({ queryKey: historyKey(founderId) });
+			queryClient.invalidateQueries({
+				queryKey: orpc.founders.get.queryOptions({ input: { founderId } })
+					.queryKey,
+			});
+			queryClient.invalidateQueries({
+				queryKey: orpc.founders.list.queryOptions().queryKey,
+			});
+		},
+	}));
 
 	const validationSchema = z.object({
 		blocked: z.string().min(1, "Conta o que travou"),
@@ -123,7 +260,7 @@
 							>
 								Cadastra um no seu perfil</a
 							>
-							pra linkar o check-in a ele (opcional).
+							pra poder postar um check-in.
 						</p>
 					{/if}
 
@@ -202,7 +339,9 @@
 					>
 						{#snippet children(state: SubmitState)}
 							<Button
-								disabled={!state.canSubmit || state.isSubmitting}
+								disabled={!state.canSubmit ||
+									state.isSubmitting ||
+									!productsQuery.data?.length}
 								type="submit"
 							>
 								{state.isSubmitting ? "Postando..." : "Postar"}

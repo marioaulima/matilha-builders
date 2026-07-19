@@ -782,14 +782,18 @@
 								class="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-3"
 							>
 								<AnimatePresence>
-									{#each founder.products as p (p._key ?? p.id)}
+									{#each founder.products as p, index (p._key ?? p.id)}
 										<motion.div
 											animate={{ opacity: 1, scale: 1, y: 0 }}
 											class="flex flex-col gap-4 rounded-xl border border-border p-4"
 											exit={{ opacity: 0, scale: 0.96 }}
 											initial={{ opacity: 0, scale: 0.96, y: 8 }}
 											key={p._key ?? p.id}
-											transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+											transition={{
+												delay: index * 0.04,
+												duration: 0.2,
+												ease: [0.23, 1, 0.32, 1],
+											}}
 										>
 											{#if editingId === p.id}
 												<form

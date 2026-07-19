@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { motion } from "@humanspeak/svelte-motion";
+	import { MotionConfig, motion } from "@humanspeak/svelte-motion";
 	import { QueryClientProvider } from "@tanstack/svelte-query";
 	import { SvelteQueryDevtools } from "@tanstack/svelte-query-devtools";
 	import { goto, onNavigate } from "$app/navigation";
@@ -52,52 +52,54 @@
 	const isAuthorized = $derived(isLoginRoute || !!$sessionQuery.data);
 </script>
 
-<QueryClientProvider client={queryClient}>
-	{#if isLoginRoute}
-		<main class="h-svh overflow-y-auto">
-			{@render children()}
-		</main>
-	{:else if $sessionQuery.isPending}
-		<div class="flex h-svh items-center justify-center">
-			<Loader
-				size="sm"
-				subtitle="Só um instante"
-				title="Carregando a matilha..."
-			/>
-		</div>
-	{:else if isAuthorized && isPendingApproval}
-		<motion.div
-			animate={{ opacity: 1, y: 0 }}
-			class="flex h-svh flex-col items-center justify-center gap-4 px-4 text-center"
-			initial={{ opacity: 0, y: 8 }}
-			transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
-		>
-			<p class="max-w-sm text-sm text-muted-foreground">
-				{approvalStatus === "rejected"
-					? "Seu cadastro não foi aprovado. Fale com a equipe da matilha."
-					: "Sua conta está pendente de aprovação no momento."}
-			</p>
-			<button
-				class="text-sm underline decoration-muted-foreground/40 underline-offset-2 hover:text-foreground"
-				onclick={handleSignOut}
-				type="button"
-			>
-				Sair
-			</button>
-		</motion.div>
-	{:else if isAuthorized}
-		<div class="grid h-svh grid-rows-[auto_1fr]">
-			<Header />
-			<main class="overflow-y-auto">
+<MotionConfig reducedMotion="user">
+	<QueryClientProvider client={queryClient}>
+		{#if isLoginRoute}
+			<main class="h-svh overflow-y-auto">
 				{@render children()}
 			</main>
-		</div>
-	{:else}
-		<div
-			class="flex h-svh items-center justify-center text-sm text-muted-foreground"
-		>
-			Redirecionando...
-		</div>
-	{/if}
-	<SvelteQueryDevtools />
-</QueryClientProvider>
+		{:else if $sessionQuery.isPending}
+			<div class="flex h-svh items-center justify-center">
+				<Loader
+					size="sm"
+					subtitle="Só um instante"
+					title="Carregando a matilha..."
+				/>
+			</div>
+		{:else if isAuthorized && isPendingApproval}
+			<motion.div
+				animate={{ opacity: 1, y: 0 }}
+				class="flex h-svh flex-col items-center justify-center gap-4 px-4 text-center"
+				initial={{ opacity: 0, y: 8 }}
+				transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+			>
+				<p class="max-w-sm text-sm text-muted-foreground">
+					{approvalStatus === "rejected"
+					? "Seu cadastro não foi aprovado. Fale com a equipe da matilha."
+					: "Sua conta está pendente de aprovação no momento."}
+				</p>
+				<button
+					class="text-sm underline decoration-muted-foreground/40 underline-offset-2 hover:text-foreground"
+					onclick={handleSignOut}
+					type="button"
+				>
+					Sair
+				</button>
+			</motion.div>
+		{:else if isAuthorized}
+			<div class="grid h-svh grid-rows-[auto_1fr]">
+				<Header />
+				<main class="overflow-y-auto">
+					{@render children()}
+				</main>
+			</div>
+		{:else}
+			<div
+				class="flex h-svh items-center justify-center text-sm text-muted-foreground"
+			>
+				Redirecionando...
+			</div>
+		{/if}
+		<SvelteQueryDevtools />
+	</QueryClientProvider>
+</MotionConfig>

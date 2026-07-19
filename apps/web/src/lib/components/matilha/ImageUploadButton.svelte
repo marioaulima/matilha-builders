@@ -79,14 +79,14 @@
 	>
 		{@render children?.()}
 		<span
-			class="absolute inset-0 flex items-center justify-center rounded-full bg-black/0 opacity-0 transition-all duration-200 group-hover/avatar:bg-black/50 group-hover/avatar:opacity-100"
+			class="absolute inset-0 flex items-center justify-center rounded-full bg-black/0 opacity-0 transition-[background-color,opacity] duration-200 group-hover/avatar:bg-black/50 group-hover/avatar:opacity-100"
 		>
 			<AnimatePresence mode="wait">
 				{#if $isUploading}
 					<motion.span
 						animate={{ opacity: 1, scale: 1 }}
-						exit={{ opacity: 0, scale: 0.8 }}
-						initial={{ opacity: 0, scale: 0.8 }}
+						exit={{ opacity: 0, scale: 0.92 }}
+						initial={{ opacity: 0, scale: 0.92 }}
 						key="loading"
 						transition={{ duration: 0.15 }}
 					>
@@ -95,8 +95,8 @@
 				{:else}
 					<motion.span
 						animate={{ opacity: 1, scale: 1 }}
-						exit={{ opacity: 0, scale: 0.8 }}
-						initial={{ opacity: 0, scale: 0.8 }}
+						exit={{ opacity: 0, scale: 0.92 }}
+						initial={{ opacity: 0, scale: 0.92 }}
 						key="pencil"
 						transition={{ duration: 0.15 }}
 					>
@@ -118,8 +118,8 @@
 			{#if $isUploading}
 				<motion.span
 					animate={{ opacity: 1, scale: 1 }}
-					exit={{ opacity: 0, scale: 0.8 }}
-					initial={{ opacity: 0, scale: 0.8 }}
+					exit={{ opacity: 0, scale: 0.92 }}
+					initial={{ opacity: 0, scale: 0.92 }}
 					key="loading"
 					transition={{ duration: 0.15 }}
 				>
@@ -128,8 +128,8 @@
 			{:else}
 				<motion.span
 					animate={{ opacity: 1, scale: 1 }}
-					exit={{ opacity: 0, scale: 0.8 }}
-					initial={{ opacity: 0, scale: 0.8 }}
+					exit={{ opacity: 0, scale: 0.92 }}
+					initial={{ opacity: 0, scale: 0.92 }}
 					key="add"
 					transition={{ duration: 0.15 }}
 				>

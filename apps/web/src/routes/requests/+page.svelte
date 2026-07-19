@@ -122,14 +122,18 @@
 	{:else}
 		<div class="flex flex-col gap-3">
 			<AnimatePresence>
-				{#each pendingUsers as request (request.userId)}
+				{#each pendingUsers as request, index (request.userId)}
 					<motion.div
 						animate={{ opacity: 1, scale: 1, y: 0 }}
 						class="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between"
 						exit={{ opacity: 0, scale: 0.97 }}
 						initial={{ opacity: 0, y: 8 }}
 						key={request.userId}
-						transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+						transition={{
+							delay: index * 0.04,
+							duration: 0.2,
+							ease: [0.23, 1, 0.32, 1],
+						}}
 					>
 						<div class="flex flex-col gap-0.5">
 							<span class="text-sm font-semibold">{request.name}</span>

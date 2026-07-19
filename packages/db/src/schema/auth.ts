@@ -2,12 +2,14 @@ import { relations } from "drizzle-orm";
 import { boolean, index, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
+	approvalStatus: text("approval_status").default("pending").notNull(),
 	createdAt: timestamp("created_at").defaultNow().notNull(),
 	email: text("email").notNull().unique(),
 	emailVerified: boolean("email_verified").default(false).notNull(),
 	id: text("id").primaryKey(),
 	image: text("image"),
 	name: text("name").notNull(),
+	role: text("role").default("founder").notNull(),
 	updatedAt: timestamp("updated_at")
 		.defaultNow()
 		.$onUpdate(() => /* @__PURE__ */ new Date())

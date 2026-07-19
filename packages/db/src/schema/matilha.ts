@@ -16,6 +16,12 @@ export const productStatusEnum = pgEnum("product_status", [
 	"launched",
 ]);
 
+export const productInterestEnum = pgEnum("product_interest", [
+	"running",
+	"building",
+	"observing",
+]);
+
 export const founder = pgTable("founder", {
 	avatarUrl: text("avatar_url"),
 	bio: text("bio"),
@@ -24,7 +30,9 @@ export const founder = pgTable("founder", {
 		(): AnyPgColumn => product.id,
 		{ onDelete: "set null" }
 	),
+	interest: productInterestEnum("interest"),
 	lastCheckInAt: timestamp("last_check_in_at"),
+	phone: text("phone"),
 	streak: integer("streak").default(0).notNull(),
 	updatedAt: timestamp("updated_at")
 		.defaultNow()

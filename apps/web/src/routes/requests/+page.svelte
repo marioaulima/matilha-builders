@@ -1,5 +1,10 @@
 <script lang="ts">
-	import { createMutation, createQuery, useQueryClient } from "@tanstack/svelte-query";
+	import { AnimatePresence, motion } from "@humanspeak/svelte-motion";
+	import {
+		createMutation,
+		createQuery,
+		useQueryClient,
+	} from "@tanstack/svelte-query";
 	import { goto } from "$app/navigation";
 	import { authClient } from "$lib/auth-client";
 	import { Button } from "$lib/components/ui/button/index.js";
@@ -18,7 +23,7 @@
 	);
 
 	$effect(() => {
-		if (!$sessionQuery.isPending && !isSuperAdmin) {
+		if (!($sessionQuery.isPending || isSuperAdmin)) {
 			goto("/board");
 		}
 	});
@@ -29,20 +34,54 @@
 		enabled: isSuperAdmin,
 	}));
 
-	function invalidate() {
-		queryClient.invalidateQueries({
-			queryKey: orpc.admin.listPendingUsers.queryOptions().queryKey,
-		});
+	type PendingData = NonNullable<typeof pendingQuery.data>;
+
+	function pendingQueryKey() {
+		return orpc.admin.listPendingUsers.queryOptions().queryKey;
 	}
 
+	async function removeOptimistically(userId: string) {
+		await queryClient.cancelQueries({ queryKey: pendingQueryKey() });
+		const snapshot = queryClient.getQueryData<PendingData>(pendingQueryKey());
+		queryClient.setQueryData<PendingData>(pendingQueryKey(), (old) =>
+			old ? old.filter((u) => u.userId !== userId) : old
+		);
+		return { snapshot };
+	}
+
+	function restorePending(
+		snapshot: PendingData | undefined
+	) {
+		if (snapshot) {
+			queryClient.setQueryData(pendingQueryKey(), snapshot);
+		}
+	}
+
+	// No onSettled invalidate here: the optimistic removal already matches
+	// what a fresh fetch would return, so refetching the same list that's
+	// on screen would just race the optimistic update and flicker.
 	const approveUser = createMutation(() => ({
 		...orpc.admin.approveUser.mutationOptions(),
-		onSuccess: invalidate,
+		onError: (
+			_error,
+			_input,
+			context: { snapshot: PendingData | undefined } | undefined
+		) => {
+			restorePending(context?.snapshot);
+		},
+		onMutate: (input) => removeOptimistically(input.userId),
 	}));
 
 	const rejectUser = createMutation(() => ({
 		...orpc.admin.rejectUser.mutationOptions(),
-		onSuccess: invalidate,
+		onError: (
+			_error,
+			_input,
+			context: { snapshot: PendingData | undefined } | undefined
+		) => {
+			restorePending(context?.snapshot);
+		},
+		onMutate: (input) => removeOptimistically(input.userId),
 	}));
 </script>
 
@@ -54,28 +93,28 @@
 		</p>
 	</div>
 	{#if pendingQuery.isLoading}
-		<Loader
-			size="sm"
-			subtitle="Buscando solicitações"
-			title="Carregando..."
-		/>
+		<Loader size="sm" subtitle="Buscando solicitações" title="Carregando..." />
 	{:else if !pendingQuery.data?.length}
 		<p class="text-sm text-muted-foreground">
 			Nenhuma solicitação pendente no momento.
 		</p>
 	{:else}
 		<div class="flex flex-col gap-3">
+			<AnimatePresence>
 			{#each pendingQuery.data as request (request.userId)}
-				<div
+				<motion.div
+					animate={{ opacity: 1, scale: 1, y: 0 }}
 					class="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between"
+					exit={{ opacity: 0, scale: 0.97 }}
+					initial={{ opacity: 0, y: 8 }}
+					key={request.userId}
+					transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
 				>
 					<div class="flex flex-col gap-0.5">
 						<span class="text-sm font-semibold">{request.name}</span>
 						<span class="text-xs text-muted-foreground">{request.email}</span>
 						{#if request.phone}
-							<span class="text-xs text-muted-foreground"
-								>{request.phone}</span
-							>
+							<span class="text-xs text-muted-foreground">{request.phone}</span>
 						{/if}
 						{#if request.interest}
 							<span class="mt-1 text-xs text-streak"
@@ -100,8 +139,9 @@
 							Aprovar
 						</Button>
 					</div>
-				</div>
+				</motion.div>
 			{/each}
+			</AnimatePresence>
 		</div>
 	{/if}
 </div>

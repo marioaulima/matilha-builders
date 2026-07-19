@@ -9,7 +9,9 @@
       "default": "./src/*.ts"
     }
   },
-  "scripts": {},
+  "scripts": {
+    "test": "vitest run"
+  },
   "dependencies": {
     "@matilha-builders/auth": "workspace:*",
     "@matilha-builders/db": "workspace:*",
@@ -23,6 +25,7 @@
   },
   "devDependencies": {
     "@matilha-builders/config": "workspace:*",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "^4.1.10"
   }
 }

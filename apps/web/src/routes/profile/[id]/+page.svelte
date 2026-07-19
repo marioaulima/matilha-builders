@@ -35,9 +35,10 @@
 		</p>
 		<div class="flex flex-col gap-3">
 			{#if historyQuery.data?.length}
-				{#each historyQuery.data as ci (ci.id)}
+				{#each historyQuery.data as ci, index (ci.id)}
 					<CheckInItem
 						checkIn={{ ...ci, name: founder.name, product: founder.product }}
+						{index}
 						showAuthor={false}
 					/>
 				{/each}

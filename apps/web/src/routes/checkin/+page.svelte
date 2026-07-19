@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { createMutation } from "@tanstack/svelte-query";
+	import { motion } from "@humanspeak/svelte-motion";
 	import Field from "$lib/components/matilha/Field.svelte";
 	import { Button } from "$lib/components/ui/button/index.js";
 	import { Card } from "$lib/components/ui/card/index.js";
@@ -21,16 +22,26 @@
 </script>
 
 {#if postCheckIn.isSuccess}
-	<div class="mx-auto max-w-[520px] px-4 py-12 text-center">
-		<div class="font-mono text-[28px] font-bold text-streak">
+	<motion.div
+		animate={{ opacity: 1, scale: 1 }}
+		class="mx-auto max-w-[520px] px-4 py-12 text-center"
+		initial={{ opacity: 0, scale: 0.94 }}
+		transition={{ duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
+	>
+		<motion.div
+			animate={{ opacity: 1, scale: 1 }}
+			class="font-mono text-[28px] font-bold text-streak"
+			initial={{ opacity: 0, scale: 0.8 }}
+			transition={{ delay: 0.1, duration: 0.4, type: "spring", bounce: 0.35 }}
+		>
 			{postCheckIn.data.streak}
 			{postCheckIn.data.streak === 1 ? "semana" : "semanas"}
-		</div>
+		</motion.div>
 		<p class="mt-1 text-sm text-muted-foreground">
 			Check-in postado. Streak mantido.
 		</p>
 		<Button class="mt-4" href="/feed" variant="outline">Ver o feed</Button>
-	</div>
+	</motion.div>
 {:else}
 	<div class="mx-auto max-w-[520px] px-4 py-6">
 		<h1 class="mb-1 text-2xl font-bold">Check-in da semana</h1>

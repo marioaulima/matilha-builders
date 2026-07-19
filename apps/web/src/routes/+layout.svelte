@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { QueryClientProvider } from "@tanstack/svelte-query";
 	import { SvelteQueryDevtools } from "@tanstack/svelte-query-devtools";
-	import { goto } from "$app/navigation";
+	import { goto, onNavigate } from "$app/navigation";
 	import { page } from "$app/state";
 	import "../app.css";
 	import { authClient } from "$lib/auth-client";
@@ -11,6 +11,22 @@
 	const { children } = $props();
 	const isLoginRoute = $derived(page.url.pathname === "/login");
 	const sessionQuery = authClient.useSession();
+
+	onNavigate((navigation) => {
+		if (!document.startViewTransition || document.hidden) {
+			return;
+		}
+		return new Promise((resolve) => {
+			const transition = document.startViewTransition(async () => {
+				resolve();
+				await navigation.complete;
+			});
+			// Rapid successive navigations (e.g. auth redirect chains) can abort
+			// an in-flight transition; that's expected, not an app error.
+			transition.ready.catch(() => {});
+			transition.finished.catch(() => {});
+		});
+	});
 
 	$effect(() => {
 		if (isLoginRoute || $sessionQuery.isPending) {

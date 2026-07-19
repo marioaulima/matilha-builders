@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { createForm } from "@tanstack/svelte-form";
+	import { motion } from "@humanspeak/svelte-motion";
 	import { z } from "zod";
 	import { goto } from "$app/navigation";
 	import { authClient } from "$lib/auth-client";
@@ -43,7 +44,12 @@
 	type SubmitState = Pick<typeof form.state, "canSubmit" | "isSubmitting">;
 </script>
 
-<div class="mx-auto w-full max-w-[400px] px-4 py-16">
+<motion.div
+	animate={{ opacity: 1, y: 0 }}
+	class="mx-auto w-full max-w-[400px] px-4 py-16"
+	initial={{ opacity: 0, y: 10 }}
+	transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
+>
 	<div class="mb-6 text-center">
 		<div class="font-mono text-2xl font-bold">matilha_builders</div>
 		<p class="mt-1.5 text-sm text-muted-foreground">Criar conta na matilha.</p>
@@ -141,4 +147,4 @@
 			Entrar
 		</button>
 	</p>
-</div>
+</motion.div>

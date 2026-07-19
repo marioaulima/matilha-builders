@@ -19,8 +19,8 @@
 		</p>
 	{:else}
 		<div class="flex flex-col gap-3">
-			{#each feedQuery.data as checkIn (checkIn.id)}
-				<CheckInItem {checkIn} />
+			{#each feedQuery.data as checkIn, index (checkIn.id)}
+				<CheckInItem {checkIn} {index} />
 			{/each}
 		</div>
 	{/if}

@@ -88,6 +88,12 @@ body {
 	--status-launched-bg: oklch(0.78 0.15 155 / 12%);
 
 	--streak: oklch(0.75 0.16 55);
+
+	--ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+
+	--ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+
+	--ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 .dark {
@@ -259,5 +265,33 @@ body {
 	}
 	html {
 		@apply font-sans;
+	}
+}
+
+/* Page transitions (View Transitions API) — fast cross-fade, triggered from +layout.svelte's onNavigate. */
+::view-transition-old(root) {
+	animation: mb-fade-out 120ms var(--ease-in-out) forwards;
+}
+
+::view-transition-new(root) {
+	animation: mb-fade-in 180ms var(--ease-out) forwards;
+}
+
+@keyframes mb-fade-out {
+	to {
+		opacity: 0;
+	}
+}
+
+@keyframes mb-fade-in {
+	from {
+		opacity: 0;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	::view-transition-old(root),
+	::view-transition-new(root) {
+		animation-duration: 1ms;
 	}
 }

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { motion } from "@humanspeak/svelte-motion";
 	import { formatRelative } from "$lib/format";
 	import { cn } from "$lib/utils.js";
 
@@ -16,11 +17,19 @@
 	let {
 		checkIn,
 		showAuthor = true,
-	}: { checkIn: CheckIn; showAuthor?: boolean } = $props();
+		index = 0,
+	}: { checkIn: CheckIn; showAuthor?: boolean; index?: number } = $props();
 </script>
 
-<div
+<motion.div
+	animate={{ opacity: 1, y: 0 }}
 	class={cn("rounded-lg border bg-card p-4", checkIn.featured ? "border-streak" : "border-border")}
+	initial={{ opacity: 0, y: 6 }}
+	transition={
+		checkIn.featured
+			? { duration: 0.3, ease: [0.23, 1, 0.32, 1] }
+			: { delay: index * 0.04, duration: 0.2, ease: [0.23, 1, 0.32, 1] }
+	}
 >
 	{#if checkIn.featured}
 		<div class="mb-2 font-mono text-[11px] text-streak">
@@ -60,4 +69,4 @@
 			</div>
 		{/if}
 	</div>
-</div>
+</motion.div>

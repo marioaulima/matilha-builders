@@ -23,8 +23,8 @@
 		<p class="text-sm text-muted-foreground">Ninguém na matilha ainda.</p>
 	{:else}
 		<div class="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-3">
-			{#each foundersQuery.data as founder (founder.userId)}
-				<FounderCard {founder} />
+			{#each foundersQuery.data as founder, index (founder.userId)}
+				<FounderCard {founder} {index} />
 			{/each}
 		</div>
 	{/if}

@@ -1,0 +1,24 @@
+{
+  "name": "@matilha-builders/auth",
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "scripts": {},
+  "dependencies": {
+    "@matilha-builders/db": "workspace:*",
+    "@matilha-builders/env": "workspace:*",
+    "better-auth": "catalog:",
+    "dotenv": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@matilha-builders/config": "workspace:*",
+    "typescript": "catalog:"
+  }
+}

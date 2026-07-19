@@ -1,0 +1,6 @@
+{
+  "extends": "@matilha-builders/config/tsconfig.base.json",
+  "compilerOptions": {
+    "strictNullChecks": true
+  }
+}

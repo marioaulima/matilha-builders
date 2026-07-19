@@ -5,8 +5,15 @@ import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 
 import { protectedProcedure } from "../index";
-import { MAX_PRODUCTS_PER_FOUNDER } from "../lib/constants";
+import { MAX_PRODUCTS_PER_FOUNDER, PAGE_SIZE } from "../lib/constants";
 import { computeNextStreak } from "../lib/streak";
+
+function paginate<T>(items: T[], cursor: number) {
+	return {
+		items,
+		nextCursor: items.length === PAGE_SIZE ? cursor + PAGE_SIZE : undefined,
+	};
+}
 
 async function requireOwnedProduct(productId: string, founderId: string) {
 	const [row] = await db
@@ -80,36 +87,52 @@ export const matilhaRouter = {
 				return { streak: nextStreak };
 			}),
 		listByFounder: protectedProcedure
-			.input(z.object({ founderId: z.string() }))
-			.handler(async ({ input }) =>
-				db.query.checkIn.findMany({
+			.input(
+				z.object({
+					cursor: z.number().int().min(0).optional(),
+					founderId: z.string(),
+				})
+			)
+			.handler(async ({ input }) => {
+				const cursor = input.cursor ?? 0;
+				const rows = await db.query.checkIn.findMany({
+					limit: PAGE_SIZE,
+					offset: cursor,
 					orderBy: desc(checkIn.createdAt),
 					where: eq(checkIn.founderId, input.founderId),
 					with: { product: true },
-				})
-			),
-		listFeed: protectedProcedure.handler(async () => {
-			const rows = await db.query.checkIn.findMany({
-				limit: 50,
-				orderBy: desc(checkIn.createdAt),
-				with: {
-					founder: { with: { user: true } },
-					product: true,
-				},
-			});
-			return rows.map((row) => ({
-				avatarUrl: row.founder.avatarUrl,
-				blocked: row.blocked,
-				createdAt: row.createdAt,
-				founderId: row.founderId,
-				help: row.help,
-				id: row.id,
-				name: row.founder.user.name,
-				product: row.product,
-				progress: row.progress,
-				streak: row.founder.streak,
-			}));
-		}),
+				});
+				return paginate(rows, cursor);
+			}),
+		listFeed: protectedProcedure
+			.input(
+				z.object({ cursor: z.number().int().min(0).optional() }).optional()
+			)
+			.handler(async ({ input }) => {
+				const cursor = input?.cursor ?? 0;
+				const rows = await db.query.checkIn.findMany({
+					limit: PAGE_SIZE,
+					offset: cursor,
+					orderBy: desc(checkIn.createdAt),
+					with: {
+						founder: { with: { user: true } },
+						product: true,
+					},
+				});
+				const items = rows.map((row) => ({
+					avatarUrl: row.founder.avatarUrl,
+					blocked: row.blocked,
+					createdAt: row.createdAt,
+					founderId: row.founderId,
+					help: row.help,
+					id: row.id,
+					name: row.founder.user.name,
+					product: row.product,
+					progress: row.progress,
+					streak: row.founder.streak,
+				}));
+				return paginate(items, cursor);
+			}),
 	},
 	founders: {
 		get: protectedProcedure
@@ -136,25 +159,33 @@ export const matilhaRouter = {
 					userId: row.userId,
 				};
 			}),
-		list: protectedProcedure.handler(async () => {
-			const rows = await db.query.founder.findMany({
-				orderBy: desc(founder.lastCheckInAt),
-				with: {
-					products: { orderBy: desc(product.createdAt) },
-					user: true,
-				},
-			});
-			return rows.map((row) => ({
-				avatarUrl: row.avatarUrl,
-				bio: row.bio,
-				featuredProductId: row.featuredProductId,
-				lastCheckInAt: row.lastCheckInAt,
-				name: row.user.name,
-				products: withFeaturedFirst(row.products, row.featuredProductId),
-				streak: row.streak,
-				userId: row.userId,
-			}));
-		}),
+		list: protectedProcedure
+			.input(
+				z.object({ cursor: z.number().int().min(0).optional() }).optional()
+			)
+			.handler(async ({ input }) => {
+				const cursor = input?.cursor ?? 0;
+				const rows = await db.query.founder.findMany({
+					limit: PAGE_SIZE,
+					offset: cursor,
+					orderBy: desc(founder.lastCheckInAt),
+					with: {
+						products: { orderBy: desc(product.createdAt) },
+						user: true,
+					},
+				});
+				const items = rows.map((row) => ({
+					avatarUrl: row.avatarUrl,
+					bio: row.bio,
+					featuredProductId: row.featuredProductId,
+					lastCheckInAt: row.lastCheckInAt,
+					name: row.user.name,
+					products: withFeaturedFirst(row.products, row.featuredProductId),
+					streak: row.streak,
+					userId: row.userId,
+				}));
+				return paginate(items, cursor);
+			}),
 		setFeaturedProduct: protectedProcedure
 			.input(z.object({ productId: z.string().nullable() }))
 			.handler(async ({ input, context }) => {

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import DotIcon from "@lucide/svelte/icons/dot";
+	import PawPrintIcon from "@lucide/svelte/icons/paw-print";
 	import { page } from "$app/state";
 	import { cn } from "$lib/utils.js";
 	import UserMenu from "./UserMenu.svelte";
@@ -22,7 +22,7 @@
 				class="flex items-center gap-1.5 font-mono text-[15px] font-bold"
 				href="/board"
 			>
-				<DotIcon class="-mx-2 size-6 text-streak" fill="currentColor" />
+				<PawPrintIcon class="size-4 text-streak" fill="currentColor" />
 				matilha_builders
 			</a>
 			<nav class="flex gap-1">

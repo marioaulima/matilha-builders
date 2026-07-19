@@ -1,0 +1,2 @@
+ALTER TABLE "founder" ADD COLUMN "featured_product_id" text;--> statement-breakpoint
+ALTER TABLE "founder" ADD CONSTRAINT "founder_featured_product_id_product_id_fk" FOREIGN KEY ("featured_product_id") REFERENCES "public"."product"("id") ON DELETE set null ON UPDATE no action;

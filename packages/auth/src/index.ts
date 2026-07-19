@@ -1,6 +1,6 @@
 import { createDb } from "@matilha-builders/db";
 import * as schema from "@matilha-builders/db/schema/auth";
-import { founderProfile } from "@matilha-builders/db/schema/matilha";
+import { founder } from "@matilha-builders/db/schema/matilha";
 import { env } from "@matilha-builders/env/server";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
@@ -19,8 +19,7 @@ export function createAuth() {
 			user: {
 				create: {
 					after: async (user) => {
-						await db.insert(founderProfile).values({
-							product: user.name,
+						await db.insert(founder).values({
 							userId: user.id,
 						});
 					},

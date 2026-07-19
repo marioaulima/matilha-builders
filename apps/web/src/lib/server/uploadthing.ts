@@ -1,9 +1,10 @@
 import { auth } from "@matilha-builders/auth";
 import { db } from "@matilha-builders/db";
-import { founderProfile } from "@matilha-builders/db/schema/matilha";
-import { eq } from "drizzle-orm";
-import { createUploadthing, type FileRouter } from "uploadthing/server";
+import { founder, product } from "@matilha-builders/db/schema/matilha";
 import { UploadThingError } from "@uploadthing/shared";
+import { and, eq } from "drizzle-orm";
+import { createUploadthing, type FileRouter } from "uploadthing/server";
+import { z } from "zod";
 
 const f = createUploadthing();
 
@@ -20,18 +21,27 @@ export const uploadRouter = {
 		.middleware(({ req }) => requireSession(req))
 		.onUploadComplete(async ({ file, metadata }) => {
 			await db
-				.update(founderProfile)
+				.update(founder)
 				.set({ avatarUrl: file.ufsUrl })
-				.where(eq(founderProfile.userId, metadata.userId));
+				.where(eq(founder.userId, metadata.userId));
 			return { url: file.ufsUrl };
 		}),
 	productImageUploader: f({ image: { maxFileCount: 1, maxFileSize: "4MB" } })
-		.middleware(({ req }) => requireSession(req))
+		.input(z.object({ productId: z.string() }))
+		.middleware(async ({ req, input }) => {
+			const { userId } = await requireSession(req);
+			return { productId: input.productId, userId };
+		})
 		.onUploadComplete(async ({ file, metadata }) => {
 			await db
-				.update(founderProfile)
-				.set({ productImageUrl: file.ufsUrl })
-				.where(eq(founderProfile.userId, metadata.userId));
+				.update(product)
+				.set({ imageUrl: file.ufsUrl })
+				.where(
+					and(
+						eq(product.id, metadata.productId),
+						eq(product.founderId, metadata.userId)
+					)
+				);
 			return { url: file.ufsUrl };
 		}),
 } satisfies FileRouter;

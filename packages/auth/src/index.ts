@@ -30,6 +30,20 @@ export function createAuth() {
 			enabled: true,
 		},
 		plugins: [],
+		user: {
+			additionalFields: {
+				approvalStatus: {
+					defaultValue: "pending",
+					input: false,
+					type: "string",
+				},
+				role: {
+					defaultValue: "founder",
+					input: false,
+					type: "string",
+				},
+			},
+		},
 		secret: env.BETTER_AUTH_SECRET,
 		trustedOrigins: [env.CORS_ORIGIN],
 	});

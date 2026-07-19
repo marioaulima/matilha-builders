@@ -55,7 +55,11 @@
 			</span>
 			<span class="flex items-center gap-2">
 				{#if checkIn.product}
-					<ProductChip product={checkIn.product} showImage={false} variant="tag" />
+					<ProductChip
+						product={checkIn.product}
+						showImage={false}
+						variant="tag"
+					/>
 				{/if}
 				<span class="font-mono text-xs text-muted-foreground"
 					>{formatRelative(checkIn.createdAt)}</span

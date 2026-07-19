@@ -151,8 +151,7 @@
 					<h1 class="text-2xl font-bold">{founder.name}</h1>
 					<p class="mt-0.5 text-sm text-muted-foreground">
 						construindo há {founder.streak}
-						{founder.streak === 1 ? "semana" : "semanas"}
-						seguidas
+						{founder.streak === 1 ? "semana seguida" : "semanas seguidas"}
 					</p>
 					{#if isOwnProfile}
 						<div class="mt-3">
@@ -422,7 +421,7 @@
 									{:else}
 										<div class="flex items-center gap-2">
 											<button
-												class="flex size-8 items-center justify-center rounded-md border border-border transition-colors hover:bg-accent"
+												class="flex h-8 items-center gap-1.5 rounded-md border border-border px-2.5 text-xs transition-colors hover:bg-accent"
 												onclick={() =>
 													toggleFeatured(p.id, founder.featuredProductId)}
 												title={founder.featuredProductId === p.id
@@ -438,6 +437,9 @@
 														? "currentColor"
 														: "none"}
 												/>
+												{founder.featuredProductId === p.id
+													? "Produto destacado"
+													: "Destacar produto"}
 											</button>
 											<div class="ml-auto flex items-center gap-2">
 												<ImageUploadButton

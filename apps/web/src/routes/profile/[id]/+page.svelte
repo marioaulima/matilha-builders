@@ -22,6 +22,7 @@
 	import { Card } from "$lib/components/ui/card/index.js";
 	import { Input } from "$lib/components/ui/input/index.js";
 	import * as Select from "$lib/components/ui/select/index.js";
+	import { Textarea } from "$lib/components/ui/textarea/index.js";
 	import { orpc } from "$lib/orpc";
 
 	const founderId = $derived(page.params.id ?? "");
@@ -40,11 +41,14 @@
 	}
 
 	const productSchema = z.object({
+		icp: z.string(),
 		link: z.union([
 			z.literal(""),
 			z.url("Link precisa ser uma URL válida (ex: https://seusite.com)"),
 		]),
 		name: z.string().min(1, "Nome do produto é obrigatório"),
+		painPoint: z.string(),
+		solution: z.string(),
 	});
 
 	let showAddProduct = $state(false);
@@ -62,9 +66,15 @@
 	}));
 
 	const addProductForm = createForm(() => ({
-		defaultValues: { link: "", name: "" },
+		defaultValues: { icp: "", link: "", name: "", painPoint: "", solution: "" },
 		onSubmit: async ({ value }) => {
-			await createProduct.mutateAsync({ link: value.link, name: value.name });
+			await createProduct.mutateAsync({
+				icp: value.icp || undefined,
+				link: value.link,
+				name: value.name,
+				painPoint: value.painPoint || undefined,
+				solution: value.solution || undefined,
+			});
 		},
 		validators: { onSubmit: productSchema },
 	}));
@@ -92,9 +102,22 @@
 
 	let editingId = $state<string | null>(null);
 
-	function startEdit(p: { id: string; name: string; link: string | null }) {
+	function startEdit(p: {
+		id: string;
+		name: string;
+		link: string | null;
+		icp?: string | null;
+		painPoint?: string | null;
+		solution?: string | null;
+	}) {
 		editingId = p.id;
-		editProductForm.reset({ link: p.link ?? "", name: p.name });
+		editProductForm.reset({
+			icp: p.icp ?? "",
+			link: p.link ?? "",
+			name: p.name,
+			painPoint: p.painPoint ?? "",
+			solution: p.solution ?? "",
+		});
 	}
 
 	function cancelEdit() {
@@ -113,15 +136,18 @@
 	}));
 
 	const editProductForm = createForm(() => ({
-		defaultValues: { link: "", name: "" },
+		defaultValues: { icp: "", link: "", name: "", painPoint: "", solution: "" },
 		onSubmit: async ({ value }) => {
 			if (!editingId) {
 				return;
 			}
 			await updateProduct.mutateAsync({
+				icp: value.icp || undefined,
 				id: editingId,
 				link: value.link,
 				name: value.name,
+				painPoint: value.painPoint || undefined,
+				solution: value.solution || undefined,
 			});
 		},
 		validators: { onSubmit: productSchema },
@@ -245,6 +271,58 @@
 								</Field>
 							{/snippet}
 						</addProductForm.Field>
+						<addProductForm.Field name="icp">
+							{#snippet children(field)}
+								<Field hint="opcional" htmlFor={field.name} label="ICP">
+									<Textarea
+										id={field.name}
+										name={field.name}
+										onblur={field.handleBlur}
+										oninput={(e: Event) =>
+											field.handleChange((e.target as HTMLTextAreaElement).value)}
+										placeholder="Quem é o cliente ideal desse produto"
+										rows={2}
+										value={field.state.value}
+									/>
+								</Field>
+							{/snippet}
+						</addProductForm.Field>
+						<addProductForm.Field name="painPoint">
+							{#snippet children(field)}
+								<Field
+									hint="opcional"
+									htmlFor={field.name}
+									label="Dor a ser resolvida"
+								>
+									<Textarea
+										id={field.name}
+										name={field.name}
+										onblur={field.handleBlur}
+										oninput={(e: Event) =>
+											field.handleChange((e.target as HTMLTextAreaElement).value)}
+										placeholder="Qual problema esse produto resolve"
+										rows={2}
+										value={field.state.value}
+									/>
+								</Field>
+							{/snippet}
+						</addProductForm.Field>
+						<addProductForm.Field name="solution">
+							{#snippet children(field)}
+								<Field hint="opcional" htmlFor={field.name} label="Solução">
+									<Textarea
+										id={field.name}
+										name={field.name}
+										onblur={field.handleBlur}
+										oninput={(e: Event) =>
+											field.handleChange((e.target as HTMLTextAreaElement).value)}
+										placeholder="Como o produto resolve essa dor"
+										rows={2}
+										value={field.state.value}
+									/>
+								</Field>
+							{/snippet}
+						</addProductForm.Field>
 						<addProductForm.Subscribe
 							selector={(state: typeof addProductForm.state): SubmitState => ({
 								canSubmit: state.canSubmit,
@@ -326,6 +404,64 @@
 															(e.target as HTMLInputElement).value
 														)}
 													placeholder="https://..."
+													value={field.state.value}
+												/>
+											</Field>
+										{/snippet}
+									</editProductForm.Field>
+									<editProductForm.Field name="icp">
+										{#snippet children(field)}
+											<Field hint="opcional" htmlFor={field.name} label="ICP">
+												<Textarea
+													id={field.name}
+													name={field.name}
+													onblur={field.handleBlur}
+													oninput={(e: Event) =>
+														field.handleChange(
+															(e.target as HTMLTextAreaElement).value
+														)}
+													placeholder="Quem é o cliente ideal desse produto"
+													rows={2}
+													value={field.state.value}
+												/>
+											</Field>
+										{/snippet}
+									</editProductForm.Field>
+									<editProductForm.Field name="painPoint">
+										{#snippet children(field)}
+											<Field
+												hint="opcional"
+												htmlFor={field.name}
+												label="Dor a ser resolvida"
+											>
+												<Textarea
+													id={field.name}
+													name={field.name}
+													onblur={field.handleBlur}
+													oninput={(e: Event) =>
+														field.handleChange(
+															(e.target as HTMLTextAreaElement).value
+														)}
+													placeholder="Qual problema esse produto resolve"
+													rows={2}
+													value={field.state.value}
+												/>
+											</Field>
+										{/snippet}
+									</editProductForm.Field>
+									<editProductForm.Field name="solution">
+										{#snippet children(field)}
+											<Field hint="opcional" htmlFor={field.name} label="Solução">
+												<Textarea
+													id={field.name}
+													name={field.name}
+													onblur={field.handleBlur}
+													oninput={(e: Event) =>
+														field.handleChange(
+															(e.target as HTMLTextAreaElement).value
+														)}
+													placeholder="Como o produto resolve essa dor"
+													rows={2}
 													value={field.state.value}
 												/>
 											</Field>

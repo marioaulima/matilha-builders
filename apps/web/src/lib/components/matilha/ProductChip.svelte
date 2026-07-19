@@ -1,5 +1,7 @@
 <script lang="ts">
 	import ExternalLinkIcon from "@lucide/svelte/icons/external-link";
+	import { motion } from "@humanspeak/svelte-motion";
+	import * as Drawer from "$lib/components/ui/drawer/index.js";
 	import { cn } from "$lib/utils.js";
 
 	type Status = "validating" | "building" | "launched";
@@ -10,6 +12,9 @@
 		link?: string | null;
 		imageUrl?: string | null;
 		status?: Status;
+		icp?: string | null;
+		painPoint?: string | null;
+		solution?: string | null;
 	};
 
 	let {
@@ -63,6 +68,17 @@
 	};
 
 	const initial = $derived((product.name || "?").charAt(0).toUpperCase());
+
+	const detailSections = $derived(
+		[
+			{ label: "ICP", value: product.icp },
+			{ label: "Dor a ser resolvida", value: product.painPoint },
+			{ label: "Solução", value: product.solution },
+		].filter(
+			(section): section is { label: string; value: string } => !!section.value
+		)
+	);
+	const hasDetails = $derived(detailSections.length > 0);
 </script>
 
 {#snippet thumb()}
@@ -118,6 +134,54 @@
 			</span>
 		{/if}
 	</div>
+{/snippet}
+
+{#snippet detailsDrawer()}
+	<Drawer.Root>
+		<Drawer.Trigger
+			class="self-start text-muted-foreground text-xs underline decoration-muted-foreground/40 underline-offset-2 transition-colors hover:text-foreground hover:decoration-foreground"
+			onclick={(e: MouseEvent) => e.stopPropagation()}
+		>
+			Ver mais sobre
+		</Drawer.Trigger>
+		<Drawer.Content>
+			<div class="mx-auto w-full max-w-md">
+				<Drawer.Header>
+					<Drawer.Title class="text-lg">{product.name}</Drawer.Title>
+					<Drawer.Description>
+						{#if product.status}
+							{statusLabels[product.status]}
+						{/if}
+					</Drawer.Description>
+				</Drawer.Header>
+				<div class="flex flex-col gap-4 px-4 pb-6">
+					{#each detailSections as section, index (section.label)}
+						<motion.div
+							animate={{ opacity: 1, y: 0 }}
+							initial={{ opacity: 0, y: 8 }}
+							transition={{
+								delay: 0.06 * index,
+								duration: 0.3,
+								ease: [0.23, 1, 0.32, 1],
+							}}
+						>
+							<div class="font-semibold text-muted-foreground text-xs">
+								{section.label}
+							</div>
+							<p class="mt-1 text-sm leading-relaxed">{section.value}</p>
+						</motion.div>
+					{/each}
+				</div>
+				<Drawer.Footer>
+					<Drawer.Close
+						class="h-9 w-full rounded-md border border-border text-sm transition-colors hover:bg-accent"
+					>
+						Fechar
+					</Drawer.Close>
+				</Drawer.Footer>
+			</div>
+		</Drawer.Content>
+	</Drawer.Root>
 {/snippet}
 
 {#if variant === "tag"}
@@ -179,5 +243,8 @@
 			{/if}
 		</div>
 		{@render caption()}
+		{#if hasDetails}
+			{@render detailsDrawer()}
+		{/if}
 	</div>
 {/if}

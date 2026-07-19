@@ -12,6 +12,9 @@
 		link: string | null;
 		imageUrl: string | null;
 		status: "validating" | "building" | "launched";
+		icp?: string | null;
+		painPoint?: string | null;
+		solution?: string | null;
 	};
 
 	type Founder = {

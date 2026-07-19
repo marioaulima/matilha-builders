@@ -39,12 +39,15 @@ export const product = pgTable("product", {
 	founderId: text("founder_id")
 		.notNull()
 		.references(() => user.id, { onDelete: "cascade" }),
+	icp: text("icp"),
 	id: text("id")
 		.primaryKey()
 		.$defaultFn(() => crypto.randomUUID()),
 	imageUrl: text("image_url"),
 	link: text("link"),
 	name: text("name").notNull(),
+	painPoint: text("pain_point"),
+	solution: text("solution"),
 	status: productStatusEnum("status").default("validating").notNull(),
 	updatedAt: timestamp("updated_at")
 		.defaultNow()

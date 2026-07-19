@@ -177,8 +177,11 @@ export const matilhaRouter = {
 		create: protectedProcedure
 			.input(
 				z.object({
+					icp: z.string().optional(),
 					link: z.string().url().optional().or(z.literal("")),
 					name: z.string().min(1),
+					painPoint: z.string().optional(),
+					solution: z.string().optional(),
 				})
 			)
 			.handler(async ({ input, context }) => {
@@ -196,8 +199,11 @@ export const matilhaRouter = {
 					.insert(product)
 					.values({
 						founderId,
+						icp: input.icp || undefined,
 						link: input.link || undefined,
 						name: input.name,
+						painPoint: input.painPoint || undefined,
+						solution: input.solution || undefined,
 					})
 					.returning();
 				return row;
@@ -227,9 +233,12 @@ export const matilhaRouter = {
 		update: protectedProcedure
 			.input(
 				z.object({
+					icp: z.string().optional(),
 					id: z.string(),
 					link: z.string().url().optional().or(z.literal("")),
 					name: z.string().min(1).optional(),
+					painPoint: z.string().optional(),
+					solution: z.string().optional(),
 					status: z.enum(["validating", "building", "launched"]).optional(),
 				})
 			)

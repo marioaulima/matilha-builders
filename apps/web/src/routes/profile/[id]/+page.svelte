@@ -12,7 +12,6 @@
 		createQuery,
 		useQueryClient,
 	} from "@tanstack/svelte-query";
-	import InfiniteScrollSentinel from "$lib/components/matilha/InfiniteScrollSentinel.svelte";
 	import { z } from "zod";
 	import { page } from "$app/state";
 	import { authClient } from "$lib/auth-client";
@@ -20,6 +19,7 @@
 	import CheckInItem from "$lib/components/matilha/CheckInItem.svelte";
 	import Field from "$lib/components/matilha/Field.svelte";
 	import ImageUploadButton from "$lib/components/matilha/ImageUploadButton.svelte";
+	import InfiniteScrollSentinel from "$lib/components/matilha/InfiniteScrollSentinel.svelte";
 	import ProductChip from "$lib/components/matilha/ProductChip.svelte";
 	import StreakBadge from "$lib/components/matilha/StreakBadge.svelte";
 	import { Button } from "$lib/components/ui/button/index.js";

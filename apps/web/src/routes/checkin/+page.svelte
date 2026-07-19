@@ -85,7 +85,10 @@
 		}
 		return {
 			...data,
-			pages: [{ ...firstPage, items: [item, ...firstPage.items] }, ...restPages],
+			pages: [
+				{ ...firstPage, items: [item, ...firstPage.items] },
+				...restPages,
+			],
 		};
 	}
 
@@ -119,8 +122,9 @@
 			const founderId = $sessionQuery.data?.user.id ?? "";
 			await queryClient.cancelQueries({ queryKey: feedKey() });
 			await queryClient.cancelQueries({ queryKey: historyKey(founderId) });
-			const feedSnapshot =
-				queryClient.getQueryData<Paginated<FeedItem>>(feedKey());
+			const feedSnapshot = queryClient.getQueryData<Paginated<FeedItem>>(
+				feedKey()
+			);
 			const historySnapshot = queryClient.getQueryData<Paginated<HistoryItem>>(
 				historyKey(founderId)
 			);

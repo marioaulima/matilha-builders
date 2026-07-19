@@ -7,9 +7,9 @@
 	} from "@tanstack/svelte-query";
 	import { goto } from "$app/navigation";
 	import { authClient } from "$lib/auth-client";
+	import InfiniteScrollSentinel from "$lib/components/matilha/InfiniteScrollSentinel.svelte";
 	import { Button } from "$lib/components/ui/button/index.js";
 	import { Loader } from "$lib/components/ui/loader/index.js";
-	import InfiniteScrollSentinel from "$lib/components/matilha/InfiniteScrollSentinel.svelte";
 	import { orpc } from "$lib/orpc";
 
 	const interestLabels: Record<string, string> = {
@@ -43,7 +43,9 @@
 		pendingQuery.data?.pages.flatMap((page) => page.items) ?? []
 	);
 
-	type PendingItem = NonNullable<typeof pendingQuery.data>["pages"][number]["items"][number];
+	type PendingItem = NonNullable<
+		typeof pendingQuery.data
+	>["pages"][number]["items"][number];
 	type PendingData = NonNullable<typeof pendingQuery.data>;
 
 	function pendingQueryKey() {
@@ -62,9 +64,7 @@
 						...old,
 						pages: old.pages.map((page) => ({
 							...page,
-							items: page.items.filter(
-								(u: PendingItem) => u.userId !== userId
-							),
+							items: page.items.filter((u: PendingItem) => u.userId !== userId),
 						})),
 					}
 				: old

@@ -82,7 +82,7 @@
 						{#each rest as p (p.id)}
 							<motion.button
 								animate={{ opacity: 1, scale: 1 }}
-								class="cursor-pointer rounded-full transition-opacity hover:opacity-80"
+								class="group cursor-pointer rounded-full"
 								exit={{ opacity: 0, scale: 0.9 }}
 								initial={{ opacity: 0, scale: 0.9 }}
 								key={p.id}
@@ -91,8 +91,9 @@
 								type="button"
 							>
 								<ProductChip
-									class="pointer-events-none"
+									class="pointer-events-none transition-colors group-hover:border-streak/50 group-hover:bg-streak/10"
 									product={p}
+									showImage={false}
 									variant="tag"
 								/>
 							</motion.button>

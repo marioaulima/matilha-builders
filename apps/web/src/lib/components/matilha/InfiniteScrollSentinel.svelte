@@ -31,7 +31,7 @@
 </script>
 
 {#if hasNextPage}
-	<div bind:this={sentinel} class="flex justify-center py-6">
+	<div class="flex justify-center py-6" bind:this={sentinel}>
 		{#if isFetchingNextPage}
 			<LoaderCircleIcon class="size-5 animate-spin text-muted-foreground" />
 		{/if}

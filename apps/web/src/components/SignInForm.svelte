@@ -11,6 +11,8 @@
 
 	let { switchToSignUp } = $props<{ switchToSignUp: () => void }>();
 
+	let pendingMessage = $state("");
+
 	const validationSchema = z.object({
 		email: z.email("Email inválido"),
 		password: z.string().min(1, "Senha é obrigatória"),
@@ -19,6 +21,7 @@
 	const form = createForm(() => ({
 		defaultValues: { email: "", password: "" },
 		onSubmit: async ({ value }) => {
+			pendingMessage = "";
 			await authClient.signIn.email(
 				{ email: value.email, password: value.password },
 				{
@@ -27,7 +30,18 @@
 							error.error.message || "Não deu pra entrar. Tenta de novo."
 						);
 					},
-					onSuccess: () => goto("/board"),
+					onSuccess: async () => {
+						const { data } = await authClient.getSession();
+						if (data?.user && data.user.approvalStatus !== "approved") {
+							await authClient.signOut();
+							pendingMessage =
+								data.user.approvalStatus === "rejected"
+									? "Seu cadastro não foi aprovado. Fale com a equipe da matilha."
+									: "Sua conta está pendente de aprovação no momento.";
+							return;
+						}
+						goto("/board");
+					},
 				}
 			);
 		},
@@ -60,6 +74,14 @@
 				form.handleSubmit();
 			}}
 		>
+			{#if pendingMessage}
+				<div
+					class="rounded-md border border-status-validating/30 bg-status-validating/10 px-3 py-2 text-sm text-status-validating"
+				>
+					{pendingMessage}
+				</div>
+			{/if}
+
 			<form.Field name="email">
 				{#snippet children(field)}
 					<Field

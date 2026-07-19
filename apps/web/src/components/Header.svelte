@@ -1,14 +1,25 @@
 <script lang="ts">
 	import PawPrintIcon from "@lucide/svelte/icons/paw-print";
 	import { page } from "$app/state";
+	import { authClient } from "$lib/auth-client";
 	import { cn } from "$lib/utils.js";
 	import UserMenu from "./UserMenu.svelte";
 
-	const links = [
+	const sessionQuery = authClient.useSession();
+	const isSuperAdmin = $derived(
+		$sessionQuery.data?.user.role === "super_admin"
+	);
+
+	const baseLinks = [
 		{ href: "/board", label: "Board" },
 		{ href: "/feed", label: "Feed" },
 		{ href: "/checkin", label: "Check-in" },
 	];
+	const links = $derived(
+		isSuperAdmin
+			? [...baseLinks, { href: "/requests", label: "Solicitações" }]
+			: baseLinks
+	);
 </script>
 
 <div

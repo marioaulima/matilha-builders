@@ -12,6 +12,16 @@
 	const { children } = $props();
 	const isLoginRoute = $derived(page.url.pathname === "/login");
 	const sessionQuery = authClient.useSession();
+	const approvalStatus = $derived($sessionQuery.data?.user.approvalStatus);
+	const isPendingApproval = $derived(
+		!!$sessionQuery.data && approvalStatus !== "approved"
+	);
+
+	async function handleSignOut() {
+		await authClient.signOut({
+			fetchOptions: { onSuccess: () => goto("/login") },
+		});
+	}
 
 	onNavigate((navigation) => {
 		if (!document.startViewTransition || document.hidden) {
@@ -53,6 +63,21 @@
 				subtitle="Só um instante"
 				title="Carregando a matilha..."
 			/>
+		</div>
+	{:else if isAuthorized && isPendingApproval}
+		<div class="flex h-svh flex-col items-center justify-center gap-4 px-4 text-center">
+			<p class="max-w-sm text-sm text-muted-foreground">
+				{approvalStatus === "rejected"
+					? "Seu cadastro não foi aprovado. Fale com a equipe da matilha."
+					: "Sua conta está pendente de aprovação no momento."}
+			</p>
+			<button
+				class="text-sm underline decoration-muted-foreground/40 underline-offset-2 hover:text-foreground"
+				onclick={handleSignOut}
+				type="button"
+			>
+				Sair
+			</button>
 		</div>
 	{:else if isAuthorized}
 		<div class="grid h-svh grid-rows-[auto_1fr]">

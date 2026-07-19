@@ -294,4 +294,11 @@ body {
 	::view-transition-new(root) {
 		animation-duration: 1ms;
 	}
+
+	*,
+	*::before,
+	*::after {
+		transition-duration: 1ms !important;
+		animation-duration: 1ms !important;
+	}
 }

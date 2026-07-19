@@ -6,11 +6,13 @@
 	const feedQuery = createQuery(() => orpc.checkIns.listFeed.queryOptions());
 </script>
 
-<div class="mx-auto max-w-2xl px-4 py-6">
-	<h1 class="mb-1 text-2xl font-bold">Feed</h1>
-	<p class="mb-5 text-sm text-muted-foreground">
-		Os wins e os fails de todo mundo
-	</p>
+<div class="mx-auto max-w-4xl px-4 py-8 md:px-6">
+	<div class="mb-6 border-border border-b pb-5">
+		<h1 class="text-2xl font-bold tracking-tight">Feed</h1>
+		<p class="mt-1 text-sm text-muted-foreground">
+			Os wins e os fails de todo mundo
+		</p>
+	</div>
 	{#if feedQuery.isLoading}
 		<p class="text-sm text-muted-foreground">Carregando...</p>
 	{:else if !feedQuery.data?.length}

@@ -7,10 +7,12 @@
 	const foundersQuery = createQuery(() => orpc.founders.list.queryOptions());
 </script>
 
-<div class="mx-auto max-w-4xl px-4 py-6">
-	<div class="mb-5 flex items-center justify-between">
+<div class="mx-auto max-w-4xl px-4 py-8 md:px-6">
+	<div
+		class="mb-6 flex items-end justify-between gap-4 border-border border-b pb-5"
+	>
 		<div>
-			<h1 class="text-2xl font-bold">Board</h1>
+			<h1 class="text-2xl font-bold tracking-tight">Board</h1>
 			<p class="mt-1 text-sm text-muted-foreground">
 				Quem tá construindo o quê
 			</p>

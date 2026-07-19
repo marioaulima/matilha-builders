@@ -1,5 +1,7 @@
 <script lang="ts">
+	import DotIcon from "@lucide/svelte/icons/dot";
 	import { page } from "$app/state";
+	import { cn } from "$lib/utils.js";
 	import UserMenu from "./UserMenu.svelte";
 
 	const links = [
@@ -9,20 +11,29 @@
 	];
 </script>
 
-<div>
+<div
+	class="sticky top-0 z-10 border-border/60 border-b bg-background/85 backdrop-blur-md"
+>
 	<div
-		class="mx-auto flex max-w-4xl items-center justify-between px-4 py-2.5 md:px-6"
+		class="mx-auto flex max-w-4xl items-center justify-between px-4 py-3 md:px-6"
 	>
-		<div class="flex items-center gap-5">
-			<a class="font-mono text-[15px] font-bold" href="/board"
-				>matilha_builders</a
+		<div class="flex items-center gap-6">
+			<a
+				class="flex items-center gap-1.5 font-mono text-[15px] font-bold"
+				href="/board"
 			>
-			<nav class="flex gap-4">
+				<DotIcon class="-mx-2 size-6 text-streak" fill="currentColor" />
+				matilha_builders
+			</a>
+			<nav class="flex gap-1">
 				{#each links as link (link.href)}
 					<a
-						class={page.url.pathname === link.href
-							? "text-sm font-semibold text-foreground"
-							: "text-sm text-muted-foreground transition-colors hover:text-neutral-400"}
+						class={cn(
+							"rounded-md px-2.5 py-1 text-sm transition-colors",
+							page.url.pathname === link.href
+								? "bg-accent font-semibold text-foreground"
+								: "text-muted-foreground hover:text-foreground"
+						)}
 						href={link.href}
 					>
 						{link.label}
@@ -32,5 +43,4 @@
 		</div>
 		<UserMenu />
 	</div>
-	<hr class="border-border">
 </div>

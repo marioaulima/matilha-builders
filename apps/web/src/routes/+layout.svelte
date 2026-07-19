@@ -5,6 +5,7 @@
 	import { page } from "$app/state";
 	import "../app.css";
 	import { authClient } from "$lib/auth-client";
+	import { Loader } from "$lib/components/ui/loader/index.js";
 	import { queryClient } from "$lib/orpc";
 	import Header from "../components/Header.svelte";
 
@@ -46,10 +47,12 @@
 			{@render children()}
 		</main>
 	{:else if $sessionQuery.isPending}
-		<div
-			class="flex h-svh items-center justify-center text-sm text-muted-foreground"
-		>
-			Carregando...
+		<div class="flex h-svh items-center justify-center">
+			<Loader
+				size="sm"
+				subtitle="Só um instante"
+				title="Carregando a matilha..."
+			/>
 		</div>
 	{:else if isAuthorized}
 		<div class="grid h-svh grid-rows-[auto_1fr]">

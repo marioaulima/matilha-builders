@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
 	import CheckInItem from "$lib/components/matilha/CheckInItem.svelte";
+	import { Loader } from "$lib/components/ui/loader/index.js";
 	import { orpc } from "$lib/orpc";
 
 	const feedQuery = createQuery(() => orpc.checkIns.listFeed.queryOptions());
@@ -14,7 +15,11 @@
 		</p>
 	</div>
 	{#if feedQuery.isLoading}
-		<p class="text-sm text-muted-foreground">Carregando...</p>
+		<Loader
+			size="sm"
+			subtitle="Buscando os últimos check-ins"
+			title="Carregando o feed..."
+		/>
 	{:else if !feedQuery.data?.length}
 		<p class="text-sm text-muted-foreground">
 			Ninguém postou ainda essa semana. Começa tu.

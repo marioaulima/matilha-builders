@@ -2,6 +2,7 @@
 	import { createQuery } from "@tanstack/svelte-query";
 	import FounderCard from "$lib/components/matilha/FounderCard.svelte";
 	import { Button } from "$lib/components/ui/button/index.js";
+	import { Loader } from "$lib/components/ui/loader/index.js";
 	import { orpc } from "$lib/orpc";
 
 	const foundersQuery = createQuery(() => orpc.founders.list.queryOptions());
@@ -20,7 +21,11 @@
 		<Button href="/checkin">Postar check-in</Button>
 	</div>
 	{#if foundersQuery.isLoading}
-		<p class="text-sm text-muted-foreground">Carregando...</p>
+		<Loader
+			size="sm"
+			subtitle="Buscando quem tá construindo"
+			title="Carregando o board..."
+		/>
 	{:else if !foundersQuery.data?.length}
 		<p class="text-sm text-muted-foreground">Ninguém na matilha ainda.</p>
 	{:else}

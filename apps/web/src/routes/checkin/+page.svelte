@@ -7,6 +7,7 @@
 	import Field from "$lib/components/matilha/Field.svelte";
 	import { Button } from "$lib/components/ui/button/index.js";
 	import { Card } from "$lib/components/ui/card/index.js";
+	import { Loader } from "$lib/components/ui/loader/index.js";
 	import * as Select from "$lib/components/ui/select/index.js";
 	import { Textarea } from "$lib/components/ui/textarea/index.js";
 	import { orpc } from "$lib/orpc";
@@ -67,34 +68,22 @@
 		</motion.div>
 	</div>
 {:else}
-	<div class="mx-auto max-w-4xl px-4 py-6 md:px-6">
-		<h1 class="mb-1 text-2xl font-bold">Check-in da semana</h1>
-		<p class="mb-5 text-sm text-muted-foreground">
-			Rápido e direto ao ponto. O que avançou e o que travou são obrigatórios; o
-			resto é opcional.
-		</p>
-		<Card class="border border-border p-4">
-			{#if productsQuery.isPending}
-				<div class="flex flex-col gap-4">
-					<div class="flex flex-col gap-1.5">
-						<div class="h-3.5 w-32 animate-pulse rounded bg-muted"></div>
-						<div class="h-9 w-full animate-pulse rounded-md bg-muted"></div>
-					</div>
-					<div class="flex flex-col gap-1.5">
-						<div class="h-3.5 w-40 animate-pulse rounded bg-muted"></div>
-						<div class="h-16 w-full animate-pulse rounded-md bg-muted"></div>
-					</div>
-					<div class="flex flex-col gap-1.5">
-						<div class="h-3.5 w-24 animate-pulse rounded bg-muted"></div>
-						<div class="h-16 w-full animate-pulse rounded-md bg-muted"></div>
-					</div>
-					<div class="flex flex-col gap-1.5">
-						<div class="h-3.5 w-44 animate-pulse rounded bg-muted"></div>
-						<div class="h-11 w-full animate-pulse rounded-md bg-muted"></div>
-					</div>
-					<div class="h-9 w-full animate-pulse rounded-md bg-muted"></div>
-				</div>
-			{:else}
+	<div class="mx-auto max-w-4xl px-4 py-8 md:px-6">
+		<div class="mb-6 border-border border-b pb-5">
+			<h1 class="text-2xl font-bold tracking-tight">Check-in da semana</h1>
+			<p class="mt-1 text-sm text-muted-foreground">
+				Rápido e direto ao ponto. O que avançou e o que travou são obrigatórios;
+				o resto é opcional.
+			</p>
+		</div>
+		{#if productsQuery.isPending}
+			<Loader
+				size="sm"
+				subtitle="Preparando o formulário"
+				title="Carregando o check-in..."
+			/>
+		{:else}
+			<Card class="border border-border p-4">
 				<form
 					class="flex flex-col gap-4"
 					onsubmit={(e) => {
@@ -224,7 +213,7 @@
 						{/snippet}
 					</form.Subscribe>
 				</form>
-			{/if}
-		</Card>
+			</Card>
+		{/if}
 	</div>
 {/if}

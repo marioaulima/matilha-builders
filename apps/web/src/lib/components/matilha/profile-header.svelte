@@ -52,8 +52,13 @@
 		<div>
 			<h1 class="text-2xl font-bold">{founder.name}</h1>
 			<p class="mt-0.5 text-sm text-muted-foreground">
-				construindo há {founder.streak}
-				{founder.streak === 1 ? "semana seguida" : "semanas seguidas"}
+				{#if founder.streak < 0}
+					streak em atraso: {founder.streak}
+					{founder.streak === -1 ? "semana" : "semanas"}
+				{:else}
+					construindo há {founder.streak}
+					{founder.streak === 1 ? "semana seguida" : "semanas seguidas"}
+				{/if}
 			</p>
 			{#if founder.bio}
 				<p class="mt-1.5 max-w-md text-sm leading-relaxed">{founder.bio}</p>

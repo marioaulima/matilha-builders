@@ -6,7 +6,11 @@ import { z } from "zod";
 
 import { protectedProcedure } from "../index";
 import { MAX_PRODUCTS_PER_FOUNDER, PAGE_SIZE } from "../lib/constants";
-import { computeNextStreak, ONE_WEEK_MS } from "../lib/streak";
+import {
+	computeCurrentStreak,
+	computeNextStreak,
+	ONE_WEEK_MS,
+} from "../lib/streak";
 
 function paginate<T>(items: T[], cursor: number) {
 	return {
@@ -130,6 +134,7 @@ export const matilhaRouter = {
 			)
 			.handler(async ({ input }) => {
 				const cursor = input?.cursor ?? 0;
+				const now = new Date();
 				const rows = await db.query.checkIn.findMany({
 					limit: PAGE_SIZE,
 					offset: cursor,
@@ -149,7 +154,11 @@ export const matilhaRouter = {
 					name: row.founder.user.name,
 					product: row.product,
 					progress: row.progress,
-					streak: row.founder.streak,
+					streak: computeCurrentStreak(
+						row.founder.streak,
+						row.founder.lastCheckInAt,
+						now
+					),
 				}));
 				return paginate(items, cursor);
 			}),
@@ -168,6 +177,11 @@ export const matilhaRouter = {
 				if (!row) {
 					throw new ORPCError("NOT_FOUND");
 				}
+				const streak = computeCurrentStreak(
+					row.streak,
+					row.lastCheckInAt,
+					new Date()
+				);
 				return {
 					avatarUrl: row.avatarUrl,
 					bio: row.bio,
@@ -175,7 +189,7 @@ export const matilhaRouter = {
 					lastCheckInAt: row.lastCheckInAt,
 					name: row.user.name,
 					products: withFeaturedFirst(row.products, row.featuredProductId),
-					streak: row.streak,
+					streak,
 					userId: row.userId,
 				};
 			}),
@@ -185,6 +199,7 @@ export const matilhaRouter = {
 			)
 			.handler(async ({ input }) => {
 				const cursor = input?.cursor ?? 0;
+				const now = new Date();
 				const rows = await db.query.founder.findMany({
 					limit: PAGE_SIZE,
 					offset: cursor,
@@ -201,7 +216,7 @@ export const matilhaRouter = {
 					lastCheckInAt: row.lastCheckInAt,
 					name: row.user.name,
 					products: withFeaturedFirst(row.products, row.featuredProductId),
-					streak: row.streak,
+					streak: computeCurrentStreak(row.streak, row.lastCheckInAt, now),
 					userId: row.userId,
 				}));
 				return paginate(items, cursor);

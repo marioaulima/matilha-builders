@@ -49,17 +49,21 @@
 		avatarUrl: string | null;
 		blocked: string;
 		createdAt: Date;
+		dismissedAt: Date | null;
 		founderId: string;
+		hasVoted: boolean;
 		help: string | null;
 		id: string;
 		name: string;
 		product: ProductRef | null;
 		progress: string;
 		streak: number;
+		voteCount: number;
 	};
 	type HistoryItem = {
 		blocked: string;
 		createdAt: Date;
+		dismissedAt: Date | null;
 		founderId: string;
 		help: string | null;
 		id: string;
@@ -160,13 +164,16 @@
 					avatarUrl: null,
 					blocked: input.blocked,
 					createdAt,
+					dismissedAt: null,
 					founderId,
+					hasVoted: false,
 					help: input.help ?? null,
 					id: optimisticId,
 					name: $sessionQuery.data?.user.name ?? "",
 					product,
 					progress: input.progress,
 					streak: 0,
+					voteCount: 0,
 				})
 			);
 			queryClient.setQueryData<Paginated<HistoryItem>>(
@@ -175,6 +182,7 @@
 					prependToFirstPage(old, {
 						blocked: input.blocked,
 						createdAt,
+						dismissedAt: null,
 						founderId,
 						help: input.help ?? null,
 						id: optimisticId,

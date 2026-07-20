@@ -43,6 +43,13 @@
       "when": 1784490326481,
       "tag": "0005_high_wolf_cub",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1784513075973,
+      "tag": "0006_check_in_dismissal_votes",
+      "breakpoints": true
     }
   ]
 }

@@ -6,6 +6,7 @@ import {
 	pgTable,
 	text,
 	timestamp,
+	uniqueIndex,
 } from "drizzle-orm/pg-core";
 
 import { user } from "./auth";
@@ -67,6 +68,7 @@ export const product = pgTable("product", {
 export const checkIn = pgTable("check_in", {
 	blocked: text("blocked").notNull(),
 	createdAt: timestamp("created_at").defaultNow().notNull(),
+	dismissedAt: timestamp("dismissed_at"),
 	founderId: text("founder_id")
 		.notNull()
 		.references(() => user.id, { onDelete: "cascade" }),
@@ -79,6 +81,28 @@ export const checkIn = pgTable("check_in", {
 	}),
 	progress: text("progress").notNull(),
 });
+
+export const checkInDismissalVote = pgTable(
+	"check_in_dismissal_vote",
+	{
+		checkInId: text("check_in_id")
+			.notNull()
+			.references(() => checkIn.id, { onDelete: "cascade" }),
+		createdAt: timestamp("created_at").defaultNow().notNull(),
+		id: text("id")
+			.primaryKey()
+			.$defaultFn(() => crypto.randomUUID()),
+		voterId: text("voter_id")
+			.notNull()
+			.references(() => user.id, { onDelete: "cascade" }),
+	},
+	(table) => [
+		uniqueIndex("check_in_dismissal_vote_unique").on(
+			table.checkInId,
+			table.voterId
+		),
+	]
+);
 
 export const founderRelations = relations(founder, ({ one, many }) => ({
 	checkIns: many(checkIn),
@@ -97,7 +121,8 @@ export const productRelations = relations(product, ({ one, many }) => ({
 	}),
 }));
 
-export const checkInRelations = relations(checkIn, ({ one }) => ({
+export const checkInRelations = relations(checkIn, ({ one, many }) => ({
+	dismissalVotes: many(checkInDismissalVote),
 	founder: one(founder, {
 		fields: [checkIn.founderId],
 		references: [founder.userId],
@@ -107,3 +132,17 @@ export const checkInRelations = relations(checkIn, ({ one }) => ({
 		references: [product.id],
 	}),
 }));
+
+export const checkInDismissalVoteRelations = relations(
+	checkInDismissalVote,
+	({ one }) => ({
+		checkIn: one(checkIn, {
+			fields: [checkInDismissalVote.checkInId],
+			references: [checkIn.id],
+		}),
+		voter: one(user, {
+			fields: [checkInDismissalVote.voterId],
+			references: [user.id],
+		}),
+	})
+);

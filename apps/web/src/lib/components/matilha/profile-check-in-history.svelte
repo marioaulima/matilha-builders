@@ -19,6 +19,7 @@
 	interface CheckIn {
 		blocked: string;
 		createdAt: string | Date;
+		dismissedAt?: string | Date | null;
 		help: string | null;
 		id: string;
 		product: Product | null;

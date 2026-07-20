@@ -1,11 +1,20 @@
 import { db } from "@matilha-builders/db";
-import { checkIn, founder, product } from "@matilha-builders/db/schema/matilha";
+import {
+	checkIn,
+	checkInDismissalVote,
+	founder,
+	product,
+} from "@matilha-builders/db/schema/matilha";
 import { ORPCError } from "@orpc/server";
-import { and, desc, eq, isNotNull, max } from "drizzle-orm";
+import { and, desc, eq, inArray, isNotNull, isNull, max } from "drizzle-orm";
 import { z } from "zod";
 
 import { protectedProcedure } from "../index";
-import { MAX_PRODUCTS_PER_FOUNDER, PAGE_SIZE } from "../lib/constants";
+import {
+	DISMISSAL_VOTE_THRESHOLD,
+	MAX_PRODUCTS_PER_FOUNDER,
+	PAGE_SIZE,
+} from "../lib/constants";
 import {
 	computeCurrentStreak,
 	computeNextStreak,
@@ -28,6 +37,64 @@ async function requireOwnedProduct(productId: string, founderId: string) {
 	if (!row || row.founderId !== founderId) {
 		throw new ORPCError("NOT_FOUND");
 	}
+}
+
+async function recomputeFounderStreak(founderId: string) {
+	const remaining = await db
+		.select({ createdAt: checkIn.createdAt })
+		.from(checkIn)
+		.where(
+			and(eq(checkIn.founderId, founderId), isNull(checkIn.dismissedAt))
+		)
+		.orderBy(checkIn.createdAt);
+
+	let streak = 0;
+	let lastCheckInAt: Date | null = null;
+	for (const row of remaining) {
+		streak = computeNextStreak(streak, lastCheckInAt, row.createdAt);
+		lastCheckInAt = row.createdAt;
+	}
+
+	await db
+		.update(founder)
+		.set({ lastCheckInAt, streak })
+		.where(eq(founder.userId, founderId));
+}
+
+async function attachDismissalInfo<
+	T extends { id: string; founderId: string; dismissedAt: Date | null },
+>(items: T[], voterId: string) {
+	const checkInIds = items.map((item) => item.id);
+	if (checkInIds.length === 0) {
+		return items.map((item) => ({ ...item, hasVoted: false, voteCount: 0 }));
+	}
+
+	const votes = await db
+		.select({ checkInId: checkInDismissalVote.checkInId })
+		.from(checkInDismissalVote)
+		.where(inArray(checkInDismissalVote.checkInId, checkInIds));
+
+	const voteCounts = new Map<string, number>();
+	for (const vote of votes) {
+		voteCounts.set(vote.checkInId, (voteCounts.get(vote.checkInId) ?? 0) + 1);
+	}
+
+	const myVotes = await db
+		.select({ checkInId: checkInDismissalVote.checkInId })
+		.from(checkInDismissalVote)
+		.where(
+			and(
+				inArray(checkInDismissalVote.checkInId, checkInIds),
+				eq(checkInDismissalVote.voterId, voterId)
+			)
+		);
+	const votedIds = new Set(myVotes.map((vote) => vote.checkInId));
+
+	return items.map((item) => ({
+		...item,
+		hasVoted: votedIds.has(item.id),
+		voteCount: voteCounts.get(item.id) ?? 0,
+	}));
 }
 
 function withFeaturedFirst<T extends { id: string }>(
@@ -110,6 +177,69 @@ export const matilhaRouter = {
 					.where(eq(founder.userId, founderId));
 				return { streak: nextStreak };
 			}),
+		dismissVote: protectedProcedure
+			.input(z.object({ checkInId: z.string() }))
+			.handler(async ({ input, context }) => {
+				const voterId = context.session.user.id;
+				const [target] = await db
+					.select({
+						dismissedAt: checkIn.dismissedAt,
+						founderId: checkIn.founderId,
+					})
+					.from(checkIn)
+					.where(eq(checkIn.id, input.checkInId))
+					.limit(1);
+				if (!target) {
+					throw new ORPCError("NOT_FOUND");
+				}
+				if (target.dismissedAt) {
+					throw new ORPCError("BAD_REQUEST", {
+						message: "Esse check-in já foi desconsiderado.",
+					});
+				}
+				if (target.founderId === voterId) {
+					throw new ORPCError("BAD_REQUEST", {
+						message: "Você não pode votar no próprio check-in.",
+					});
+				}
+				const [existingVote] = await db
+					.select({ id: checkInDismissalVote.id })
+					.from(checkInDismissalVote)
+					.where(
+						and(
+							eq(checkInDismissalVote.checkInId, input.checkInId),
+							eq(checkInDismissalVote.voterId, voterId)
+						)
+					)
+					.limit(1);
+				if (existingVote) {
+					throw new ORPCError("BAD_REQUEST", {
+						message: "Você já votou nesse check-in.",
+					});
+				}
+
+				await db.insert(checkInDismissalVote).values({
+					checkInId: input.checkInId,
+					voterId,
+				});
+				const votes = await db
+					.select({ id: checkInDismissalVote.id })
+					.from(checkInDismissalVote)
+					.where(eq(checkInDismissalVote.checkInId, input.checkInId));
+				const voteCount = votes.length;
+
+				let dismissed = false;
+				if (voteCount >= DISMISSAL_VOTE_THRESHOLD) {
+					await db
+						.update(checkIn)
+						.set({ dismissedAt: new Date() })
+						.where(eq(checkIn.id, input.checkInId));
+					await recomputeFounderStreak(target.founderId);
+					dismissed = true;
+				}
+
+				return { dismissed, voteCount };
+			}),
 		listByFounder: protectedProcedure
 			.input(
 				z.object({
@@ -132,7 +262,7 @@ export const matilhaRouter = {
 			.input(
 				z.object({ cursor: z.number().int().min(0).optional() }).optional()
 			)
-			.handler(async ({ input }) => {
+			.handler(async ({ input, context }) => {
 				const cursor = input?.cursor ?? 0;
 				const now = new Date();
 				const rows = await db.query.checkIn.findMany({
@@ -144,10 +274,11 @@ export const matilhaRouter = {
 						product: true,
 					},
 				});
-				const items = rows.map((row) => ({
+				const baseItems = rows.map((row) => ({
 					avatarUrl: row.founder.avatarUrl,
 					blocked: row.blocked,
 					createdAt: row.createdAt,
+					dismissedAt: row.dismissedAt,
 					founderId: row.founderId,
 					help: row.help,
 					id: row.id,
@@ -160,6 +291,10 @@ export const matilhaRouter = {
 						now
 					),
 				}));
+				const items = await attachDismissalInfo(
+					baseItems,
+					context.session.user.id
+				);
 				return paginate(items, cursor);
 			}),
 	},

@@ -144,7 +144,7 @@
 		>
 			Ver mais sobre
 		</Drawer.Trigger>
-		<Drawer.Content>
+		<Drawer.Content class="mx-auto max-w-fit">
 			<div class="mx-auto w-full max-w-md">
 				<Drawer.Header>
 					<Drawer.Title class="text-lg">{product.name}</Drawer.Title>

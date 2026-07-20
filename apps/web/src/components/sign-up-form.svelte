@@ -5,7 +5,7 @@
 	import { z } from "zod";
 	import { goto } from "$app/navigation";
 	import { authClient } from "$lib/auth-client";
-	import Field from "$lib/components/matilha/Field.svelte";
+	import Field from "$lib/components/matilha/field.svelte";
 	import FormInputField from "$lib/components/matilha/form-input-field.svelte";
 	import { Button } from "$lib/components/ui/button/index.js";
 	import { Card } from "$lib/components/ui/card/index.js";

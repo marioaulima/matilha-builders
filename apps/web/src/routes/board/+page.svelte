@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { createInfiniteQuery } from "@tanstack/svelte-query";
-	import FounderCard from "$lib/components/matilha/FounderCard.svelte";
-	import InfiniteScrollSentinel from "$lib/components/matilha/InfiniteScrollSentinel.svelte";
+	import FounderCard from "$lib/components/matilha/founder-card.svelte";
+	import InfiniteScrollSentinel from "$lib/components/matilha/infinite-scroll-sentinel.svelte";
 	import { Button } from "$lib/components/ui/button/index.js";
 	import { Loader } from "$lib/components/ui/loader/index.js";
 	import { orpc } from "$lib/orpc";

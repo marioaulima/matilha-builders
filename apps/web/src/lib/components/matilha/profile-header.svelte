@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { Button } from "$lib/components/ui/button/index.js";
-	import Avatar from "./Avatar.svelte";
-	import ImageUploadButton from "./ImageUploadButton.svelte";
-	import StreakBadge from "./StreakBadge.svelte";
+	import Avatar from "./avatar.svelte";
+	import ImageUploadButton from "./image-upload-button.svelte";
+	import StreakBadge from "./streak-badge.svelte";
 
 	interface Founder {
 		avatarUrl: string | null;

@@ -8,7 +8,7 @@
 	import { authClient } from "$lib/auth-client";
 	import { Loader } from "$lib/components/ui/loader/index.js";
 	import { queryClient } from "$lib/orpc";
-	import Header from "../components/Header.svelte";
+	import Header from "../components/header.svelte";
 
 	const { children } = $props();
 	const isLoginRoute = $derived(page.url.pathname === "/login");

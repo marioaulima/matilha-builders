@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Input } from "$lib/components/ui/input/index.js";
-	import Field from "./Field.svelte";
+	import Field from "./field.svelte";
 
 	interface FormField {
 		handleBlur: () => void;

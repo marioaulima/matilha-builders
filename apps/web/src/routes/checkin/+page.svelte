@@ -10,7 +10,7 @@
 	import { z } from "zod";
 	import { authClient } from "$lib/auth-client";
 	import CheckInSuccessState from "$lib/components/matilha/check-in-success-state.svelte";
-	import Field from "$lib/components/matilha/Field.svelte";
+	import Field from "$lib/components/matilha/field.svelte";
 	import FormTextareaField from "$lib/components/matilha/form-textarea-field.svelte";
 	import { Button } from "$lib/components/ui/button/index.js";
 	import { Card } from "$lib/components/ui/card/index.js";

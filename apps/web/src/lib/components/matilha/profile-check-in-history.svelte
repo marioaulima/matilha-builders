@@ -5,8 +5,8 @@
 		CollapsibleContent,
 		CollapsibleTrigger,
 	} from "$lib/components/ui/collapsible/index.js";
-	import CheckInItem from "./CheckInItem.svelte";
-	import InfiniteScrollSentinel from "./InfiniteScrollSentinel.svelte";
+	import CheckInItem from "./check-in-item.svelte";
+	import InfiniteScrollSentinel from "./infinite-scroll-sentinel.svelte";
 
 	interface Product {
 		id: string;

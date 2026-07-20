@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Textarea } from "$lib/components/ui/textarea/index.js";
-	import Field from "./Field.svelte";
+	import Field from "./field.svelte";
 
 	interface FormField {
 		handleBlur: () => void;

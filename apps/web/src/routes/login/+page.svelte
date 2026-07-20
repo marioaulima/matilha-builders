@@ -1,6 +1,6 @@
 <script lang="ts">
-	import SignInForm from "../../components/SignInForm.svelte";
-	import SignUpForm from "../../components/SignUpForm.svelte";
+	import SignInForm from "../../components/sign-in-form.svelte";
+	import SignUpForm from "../../components/sign-up-form.svelte";
 
 	let showSignIn = $state(true);
 </script>

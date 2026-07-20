@@ -10,9 +10,9 @@
 		SelectItem,
 		SelectTrigger,
 	} from "$lib/components/ui/select/index.js";
-	import Field from "./Field.svelte";
-	import ImageUploadButton from "./ImageUploadButton.svelte";
-	import ProductChip from "./ProductChip.svelte";
+	import Field from "./field.svelte";
+	import ImageUploadButton from "./image-upload-button.svelte";
+	import ProductChip from "./product-chip.svelte";
 	import type {
 		ProductFormValues,
 		ProductStatus,

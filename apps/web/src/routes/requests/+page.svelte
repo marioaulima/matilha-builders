@@ -7,7 +7,7 @@
 	} from "@tanstack/svelte-query";
 	import { goto } from "$app/navigation";
 	import { authClient } from "$lib/auth-client";
-	import InfiniteScrollSentinel from "$lib/components/matilha/InfiniteScrollSentinel.svelte";
+	import InfiniteScrollSentinel from "$lib/components/matilha/infinite-scroll-sentinel.svelte";
 	import { Button } from "$lib/components/ui/button/index.js";
 	import { Loader } from "$lib/components/ui/loader/index.js";
 	import { orpc } from "$lib/orpc";

@@ -4,7 +4,7 @@
 	import { createQuery } from "@tanstack/svelte-query";
 	import { goto } from "$app/navigation";
 	import { authClient } from "$lib/auth-client";
-	import Avatar from "$lib/components/matilha/Avatar.svelte";
+	import Avatar from "$lib/components/matilha/avatar.svelte";
 	import { Button } from "$lib/components/ui/button/index.js";
 	import * as Popover from "$lib/components/ui/popover/index.js";
 	import { orpc } from "$lib/orpc";

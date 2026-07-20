@@ -5,7 +5,7 @@
 	import { authClient } from "$lib/auth-client";
 	import * as Drawer from "$lib/components/ui/drawer/index.js";
 	import { cn } from "$lib/utils.js";
-	import UserMenu from "./UserMenu.svelte";
+	import UserMenu from "./user-menu.svelte";
 
 	const sessionQuery = authClient.useSession();
 	const isSuperAdmin = $derived(

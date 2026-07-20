@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { createInfiniteQuery } from "@tanstack/svelte-query";
-	import CheckInItem from "$lib/components/matilha/CheckInItem.svelte";
-	import InfiniteScrollSentinel from "$lib/components/matilha/InfiniteScrollSentinel.svelte";
+	import CheckInItem from "$lib/components/matilha/check-in-item.svelte";
+	import InfiniteScrollSentinel from "$lib/components/matilha/infinite-scroll-sentinel.svelte";
 	import { Loader } from "$lib/components/ui/loader/index.js";
 	import { orpc } from "$lib/orpc";
 

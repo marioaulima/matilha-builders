@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { motion } from "@humanspeak/svelte-motion";
 	import { formatRelative } from "$lib/format";
-	import Avatar from "./Avatar.svelte";
-	import ProductChip from "./ProductChip.svelte";
+	import Avatar from "./avatar.svelte";
+	import ProductChip from "./product-chip.svelte";
 
 	type Product = {
 		id: string;

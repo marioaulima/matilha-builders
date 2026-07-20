@@ -364,7 +364,7 @@
 						<div
 							class="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-3"
 						>
-							<AnimatePresence>
+							<AnimatePresence mode="popLayout">
 								{#each founder.products as product, index (product._key ?? product.id)}
 									<ProfileProductCard
 										{index}

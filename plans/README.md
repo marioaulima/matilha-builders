@@ -9,16 +9,19 @@ same session per explicit instruction to skip E2E/browser validation.
 | [002](002-explicit-transition-properties.md) | Replace `transition-all` with explicit properties on Button and avatar overlay | MEDIUM | DONE |
 | [003](003-image-upload-scale-floor.md) | Raise ImageUploadButton icon-swap scale off the sub-catalog floor | LOW | DONE |
 | [004](004-consistent-list-stagger.md) | Apply the repo's stagger convention to the two lists missing it | LOW | DONE |
+| [005](005-product-grid-layout-animation.md) | Animate sibling reflow when product cards enter/exit the grid | HIGH | DONE |
 
 ## Execution order / dependencies
 
-No dependencies between these four — each touches disjoint files/lines and was
+No dependencies between these five — each touches disjoint files/lines and was
 applied independently. 001 was done first only because it's the highest-leverage
-fix (app-wide accessibility gap).
+fix (app-wide accessibility gap). 005 was prompted directly by a user report
+that product-card add/remove felt abrupt on `/profile/[id]`.
 
 ## Notes
 
 - Mechanical verification (`svelte-check`) passed clean after each plan.
-- Feel-check steps in each plan file were **not** run this session — the user
-  explicitly asked to skip E2E/browser validation ("deixa comigo"). Worth a
-  manual pass through the feel-check sections when convenient.
+- Feel-check steps in each plan file were **not** run in the sessions that
+  produced 001-004 — the user explicitly asked to skip E2E/browser validation
+  ("deixa comigo"). 005 was feel-checked live via browser automation in the
+  session that applied it.

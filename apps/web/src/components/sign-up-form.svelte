@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { AnimatePresence, motion } from "@humanspeak/svelte-motion";
 	import PawPrintIcon from "@lucide/svelte/icons/paw-print";
+	import { normalizePhone } from "@matilha-builders/api/lib/phone";
 	import { createForm } from "@tanstack/svelte-form";
 	import { createMutation } from "@tanstack/svelte-query";
 	import { z } from "zod";
@@ -8,6 +9,7 @@
 	import { authClient } from "$lib/auth-client";
 	import Field from "$lib/components/matilha/field.svelte";
 	import FormInputField from "$lib/components/matilha/form-input-field.svelte";
+	import FormPhoneField from "$lib/components/matilha/form-phone-field.svelte";
 	import { Button } from "$lib/components/ui/button/index.js";
 	import { Card } from "$lib/components/ui/card/index.js";
 	import {
@@ -33,13 +35,11 @@
 		}),
 		name: z.string().min(2, "Nome precisa ter pelo menos 2 letras"),
 		password: z.string().min(8, "Senha precisa ter pelo menos 8 caracteres"),
-		phone: z.string().refine(
-			(value) => {
-				const digits = value.replace(/\D/g, "");
-				return digits.length === 10 || digits.length === 11;
-			},
-			{ message: "Telefone inválido" }
-		),
+		// normalizePhone is the single source of truth for validity: it returns
+		// null for anything it can't turn into a valid E.164 number.
+		phone: z.string().refine((value) => normalizePhone(value) !== null, {
+			message: "Telefone inválido",
+		}),
 	});
 
 	const updateSignupDetails = createMutation(() => ({
@@ -170,13 +170,7 @@
 
 			<form.Field name="phone">
 				{#snippet children(field)}
-					<FormInputField
-						autocomplete="tel"
-						{field}
-						label="Telefone"
-						placeholder="(11) 91234-5678"
-						type="tel"
-					/>
+					<FormPhoneField {field} label="Telefone" />
 				{/snippet}
 			</form.Field>
 

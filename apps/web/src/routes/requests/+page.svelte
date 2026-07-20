@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { AnimatePresence, motion } from "@humanspeak/svelte-motion";
-	import { formatPhoneBR } from "@matilha-builders/api/lib/phone";
+	import { formatPhone } from "@matilha-builders/api/lib/phone";
 	import {
 		createInfiniteQuery,
 		createMutation,
@@ -141,7 +141,7 @@
 							<span class="text-xs text-muted-foreground">{request.email}</span>
 							{#if request.phone}
 								<span class="text-xs text-muted-foreground"
-									>{formatPhoneBR(request.phone)}</span
+									>{formatPhone(request.phone)}</span
 								>
 							{/if}
 							{#if request.interest}

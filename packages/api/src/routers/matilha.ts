@@ -26,7 +26,7 @@ import {
 	PAGE_SIZE,
 } from "../lib/constants";
 import { fetchOgImage } from "../lib/og-image";
-import { normalizePhoneBR } from "../lib/phone";
+import { normalizePhone } from "../lib/phone";
 import {
 	computeCurrentStreak,
 	computeNextStreak,
@@ -49,7 +49,9 @@ function hasProductWithStatus(
 		db
 			.select({ id: product.id })
 			.from(product)
-			.where(and(eq(product.founderId, founderUserId), eq(product.status, status)))
+			.where(
+				and(eq(product.founderId, founderUserId), eq(product.status, status))
+			)
 	);
 }
 
@@ -427,7 +429,7 @@ export const matilhaRouter = {
 				})
 			)
 			.handler(async ({ input, context }) => {
-				const phone = normalizePhoneBR(input.phone);
+				const phone = normalizePhone(input.phone);
 				if (!phone) {
 					throw new ORPCError("BAD_REQUEST", {
 						message: "Telefone inválido.",

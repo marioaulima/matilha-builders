@@ -128,7 +128,7 @@
 	<p class="mt-4 text-center text-sm text-muted-foreground">
 		Ainda não tem conta?
 		<button
-			class="text-foreground transition-colors hover:text-neutral-400"
+			class="text-foreground transition-colors hover:text-muted-foreground"
 			onclick={switchToSignUp}
 			type="button"
 		>

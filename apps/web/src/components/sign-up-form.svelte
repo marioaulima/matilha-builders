@@ -9,7 +9,12 @@
 	import FormInputField from "$lib/components/matilha/form-input-field.svelte";
 	import { Button } from "$lib/components/ui/button/index.js";
 	import { Card } from "$lib/components/ui/card/index.js";
-	import * as Select from "$lib/components/ui/select/index.js";
+	import {
+		Content as SelectContent,
+		Item as SelectItem,
+		Root as SelectRoot,
+		Trigger as SelectTrigger,
+	} from "$lib/components/ui/select/index.js";
 	import { orpc } from "$lib/orpc";
 
 	let { switchToSignIn } = $props<{ switchToSignIn: () => void }>();
@@ -94,11 +99,7 @@
 		>
 			<form.Field name="name">
 				{#snippet children(field)}
-					<FormInputField
-						{field}
-						label="Nome"
-						placeholder="Como te chamam"
-					/>
+					<FormInputField {field} label="Nome" placeholder="Como te chamam" />
 				{/snippet}
 			</form.Field>
 
@@ -142,27 +143,27 @@
 						htmlFor={field.name}
 						label="Como você está hoje?"
 					>
-						<Select.Root
+						<SelectRoot
 							name={field.name}
 							onValueChange={(v) => field.handleChange(v as typeof field.state.value)}
 							type="single"
 							value={field.state.value}
 						>
-							<Select.Trigger class="w-full" id={field.name}>
+							<SelectTrigger class="w-full" id={field.name}>
 								{field.state.value ? interestLabels[field.state.value] : "Selecione"}
-							</Select.Trigger>
-							<Select.Content>
-								<Select.Item label={interestLabels.running} value="running"
-									>{interestLabels.running}</Select.Item
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem label={interestLabels.running} value="running"
+									>{interestLabels.running}</SelectItem
 								>
-								<Select.Item label={interestLabels.building} value="building"
-									>{interestLabels.building}</Select.Item
+								<SelectItem label={interestLabels.building} value="building"
+									>{interestLabels.building}</SelectItem
 								>
-								<Select.Item label={interestLabels.observing} value="observing"
-									>{interestLabels.observing}</Select.Item
+								<SelectItem label={interestLabels.observing} value="observing"
+									>{interestLabels.observing}</SelectItem
 								>
-							</Select.Content>
-						</Select.Root>
+							</SelectContent>
+						</SelectRoot>
 					</Field>
 				{/snippet}
 			</form.Field>
@@ -185,7 +186,7 @@
 	<p class="mt-4 text-center text-sm text-muted-foreground">
 		Já tem conta?
 		<button
-			class="text-foreground transition-colors hover:text-neutral-400"
+			class="text-foreground transition-colors hover:text-muted-foreground"
 			onclick={switchToSignIn}
 			type="button"
 		>

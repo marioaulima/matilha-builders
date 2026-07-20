@@ -1,14 +1,10 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn-svelte/tailwind.css";
-@import "@fontsource-variable/inter";
-@import "@fontsource-variable/jetbrains-mono";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/600.css";
 
 @custom-variant dark (&:is(.dark *));
-
-body {
-	@apply bg-neutral-950 text-neutral-100;
-}
 
 :root {
 	--background: oklch(1 0 0);
@@ -160,10 +156,58 @@ body {
 	--sidebar-ring: oklch(0.556 0 0);
 }
 
-@theme inline {
-	--font-sans: "Inter Variable", sans-serif;
+:root,
+.dark {
+	--background: oklch(0.176 0.014 258.4);
+	--foreground: oklch(0.943 0.011 243.7);
+	--card: oklch(0.22 0.016 256.8);
+	--card-foreground: oklch(0.943 0.011 243.7);
+	--popover: oklch(0.22 0.016 256.8);
+	--popover-foreground: oklch(0.943 0.011 243.7);
+	--primary: oklch(0.695 0.181 145.6);
+	--primary-foreground: oklch(0.176 0.014 258.4);
+	--secondary: oklch(0.22 0.016 256.8);
+	--secondary-foreground: oklch(0.943 0.011 243.7);
+	--muted: oklch(0.22 0.016 256.8);
+	--muted-foreground: oklch(0.662 0.018 250.9);
+	--accent: oklch(0.27 0.018 256.8);
+	--accent-foreground: oklch(0.943 0.011 243.7);
+	--destructive: oklch(0.637 0.208 25.3);
+	--border: oklch(0.662 0.018 250.9 / 55%);
+	--input: oklch(0.662 0.018 250.9 / 70%);
+	--ring: oklch(0.695 0.181 145.6);
+	--chart-1: oklch(0.695 0.181 145.6);
+	--chart-2: oklch(0.943 0.011 243.7);
+	--chart-3: oklch(0.662 0.018 250.9);
+	--chart-4: oklch(0.38 0.018 256.8);
+	--chart-5: oklch(0.27 0.018 256.8);
+	--radius: 0.5rem;
+	--sidebar: oklch(0.22 0.016 256.8);
+	--sidebar-foreground: oklch(0.943 0.011 243.7);
+	--sidebar-primary: oklch(0.695 0.181 145.6);
+	--sidebar-primary-foreground: oklch(0.176 0.014 258.4);
+	--sidebar-accent: oklch(0.27 0.018 256.8);
+	--sidebar-accent-foreground: oklch(0.943 0.011 243.7);
+	--sidebar-border: oklch(0.662 0.018 250.9 / 55%);
+	--sidebar-ring: oklch(0.695 0.181 145.6);
+	--status-validating: oklch(0.943 0.011 243.7);
+	--status-validating-bg: oklch(0.943 0.011 243.7 / 12%);
+	--status-building: oklch(0.662 0.018 250.9);
+	--status-building-bg: oklch(0.662 0.018 250.9 / 12%);
+	--status-launched: oklch(0.695 0.181 145.6);
+	--status-launched-bg: oklch(0.695 0.181 145.6 / 12%);
+	--streak: oklch(0.695 0.181 145.6);
+	color-scheme: dark;
+}
 
-	--font-mono: "JetBrains Mono Variable", ui-monospace, monospace;
+@theme inline {
+	--font-sans: "IBM Plex Mono", monospace;
+
+	--font-display: "IBM Plex Mono", monospace;
+
+	--font-label: "IBM Plex Mono", monospace;
+
+	--font-mono: "IBM Plex Mono", monospace;
 
 	--color-status-validating: var(--status-validating);
 
@@ -241,19 +285,19 @@ body {
 
 	--color-background: var(--background);
 
-	--radius-sm: calc(var(--radius) * 0.6);
+	--radius-sm: 4px;
 
-	--radius-md: calc(var(--radius) * 0.8);
+	--radius-md: 6px;
 
-	--radius-lg: var(--radius);
+	--radius-lg: 8px;
 
-	--radius-xl: calc(var(--radius) * 1.4);
+	--radius-xl: 8px;
 
-	--radius-2xl: calc(var(--radius) * 1.8);
+	--radius-2xl: 8px;
 
-	--radius-3xl: calc(var(--radius) * 2.2);
+	--radius-3xl: 8px;
 
-	--radius-4xl: calc(var(--radius) * 2.6);
+	--radius-4xl: 8px;
 }
 
 @layer base {
@@ -261,10 +305,27 @@ body {
 		@apply border-border outline-ring/50;
 	}
 	body {
+		font-size: 0.95rem;
+		line-height: 1.55;
 		@apply bg-background text-foreground;
 	}
 	html {
 		@apply font-sans;
+	}
+	h1,
+	h2,
+	h3 {
+		font-family: var(--font-display);
+		font-weight: 600;
+		line-height: 1.2;
+		letter-spacing: -0.02em;
+	}
+	h1 {
+		font-size: 2rem;
+	}
+	button,
+	label {
+		letter-spacing: 0.02em;
 	}
 }
 

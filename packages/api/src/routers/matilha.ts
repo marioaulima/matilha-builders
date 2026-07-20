@@ -43,9 +43,7 @@ async function recomputeFounderStreak(founderId: string) {
 	const remaining = await db
 		.select({ createdAt: checkIn.createdAt })
 		.from(checkIn)
-		.where(
-			and(eq(checkIn.founderId, founderId), isNull(checkIn.dismissedAt))
-		)
+		.where(and(eq(checkIn.founderId, founderId), isNull(checkIn.dismissedAt)))
 		.orderBy(checkIn.createdAt);
 
 	let streak = 0;

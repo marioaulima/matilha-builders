@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { motion } from "@humanspeak/svelte-motion";
 	import FlagIcon from "@lucide/svelte/icons/flag";
-	import { formatRelative } from "$lib/format";
 	import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
 	import { Button } from "$lib/components/ui/button/index.js";
+	import { formatRelative } from "$lib/format";
 	import Avatar from "./avatar.svelte";
 	import ProductChip from "./product-chip.svelte";
 
@@ -119,7 +119,9 @@
 		{/if}
 	</div>
 	{#if showAuthor && onDismissVote && !isDismissed}
-		<div class="mt-3 flex items-center justify-end gap-2 border-t border-border/60 pt-3">
+		<div
+			class="mt-3 flex items-center justify-end gap-2 border-t border-border/60 pt-3"
+		>
 			{#if checkIn.founderId === currentUserId}
 				<span class="text-xs text-muted-foreground">Seu check-in</span>
 			{:else if checkIn.hasVoted}
@@ -150,19 +152,21 @@
 					</AlertDialog.Trigger>
 					<AlertDialog.Content>
 						<AlertDialog.Header>
-							<AlertDialog.Title>Desconsiderar esse check-in?</AlertDialog.Title>
+							<AlertDialog.Title
+								>Desconsiderar esse check-in?</AlertDialog.Title
+							>
 							<AlertDialog.Description>
 								Seu voto conta pra decisão da comunidade. Com 5 votos, o
-								check-in de {checkIn.name} é marcado como desconsiderado e ela perde
-								o streak que ganhou com ele. Essa ação não pode ser desfeita depois
-								de confirmada.
+								check-in de {checkIn.name} é marcado como desconsiderado e ela
+								perde o streak que ganhou com ele. Essa ação não pode ser
+								desfeita depois de confirmada.
 							</AlertDialog.Description>
 						</AlertDialog.Header>
 						<AlertDialog.Footer>
 							<AlertDialog.Cancel>Cancelar</AlertDialog.Cancel>
 							<AlertDialog.Action
-								variant="destructive"
 								onclick={() => onDismissVote?.(checkIn.id)}
+								variant="destructive"
 							>
 								Confirmar voto
 							</AlertDialog.Action>

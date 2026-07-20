@@ -1,4 +1,6 @@
 <script lang="ts">
+	import EyeIcon from "@lucide/svelte/icons/eye";
+	import EyeOffIcon from "@lucide/svelte/icons/eye-off";
 	import { Input } from "$lib/components/ui/input/index.js";
 	import Field from "./field.svelte";
 
@@ -52,6 +54,8 @@
 		target.value = value;
 		field.handleChange(value);
 	}
+
+	let showPassword = $state(false);
 </script>
 
 <Field
@@ -60,13 +64,41 @@
 	htmlFor={field.name}
 	{label}
 >
-	<Input
-		id={field.name}
-		name={field.name}
-		onblur={field.handleBlur}
-		oninput={handleInput}
-		{placeholder}
-		{type}
-		value={field.state.value}
-	/>
+	{#if type === "password"}
+		<div class="relative">
+			<Input
+				class="pr-9"
+				id={field.name}
+				name={field.name}
+				onblur={field.handleBlur}
+				oninput={handleInput}
+				{placeholder}
+				type={showPassword ? "text" : "password"}
+				value={field.state.value}
+			/>
+			<button
+				aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+				class="absolute inset-y-0 right-0 flex w-9 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
+				onclick={() => (showPassword = !showPassword)}
+				tabindex={-1}
+				type="button"
+			>
+				{#if showPassword}
+					<EyeOffIcon class="size-4" />
+				{:else}
+					<EyeIcon class="size-4" />
+				{/if}
+			</button>
+		</div>
+	{:else}
+		<Input
+			id={field.name}
+			name={field.name}
+			onblur={field.handleBlur}
+			oninput={handleInput}
+			{placeholder}
+			{type}
+			value={field.state.value}
+		/>
+	{/if}
 </Field>

@@ -4,10 +4,9 @@
 	import { z } from "zod";
 	import { goto } from "$app/navigation";
 	import { authClient } from "$lib/auth-client";
-	import Field from "$lib/components/matilha/Field.svelte";
+	import FormInputField from "$lib/components/matilha/form-input-field.svelte";
 	import { Button } from "$lib/components/ui/button/index.js";
 	import { Card } from "$lib/components/ui/card/index.js";
-	import { Input } from "$lib/components/ui/input/index.js";
 
 	let { switchToSignUp } = $props<{ switchToSignUp: () => void }>();
 
@@ -91,41 +90,23 @@
 
 			<form.Field name="email">
 				{#snippet children(field)}
-					<Field
-						error={field.state.meta.isTouched ? field.state.meta.errors[0]?.message : undefined}
-						htmlFor={field.name}
+					<FormInputField
+						{field}
 						label="Email"
-					>
-						<Input
-							id={field.name}
-							name={field.name}
-							onblur={field.handleBlur}
-							oninput={(e: Event) => field.handleChange((e.target as HTMLInputElement).value)}
-							placeholder="seu@email.com"
-							type="email"
-							value={field.state.value}
-						/>
-					</Field>
+						placeholder="seu@email.com"
+						type="email"
+					/>
 				{/snippet}
 			</form.Field>
 
 			<form.Field name="password">
 				{#snippet children(field)}
-					<Field
-						error={field.state.meta.isTouched ? field.state.meta.errors[0]?.message : undefined}
-						htmlFor={field.name}
+					<FormInputField
+						{field}
 						label="Senha"
-					>
-						<Input
-							id={field.name}
-							name={field.name}
-							onblur={field.handleBlur}
-							oninput={(e: Event) => field.handleChange((e.target as HTMLInputElement).value)}
-							placeholder="••••••••"
-							type="password"
-							value={field.state.value}
-						/>
-					</Field>
+						placeholder="••••••••"
+						type="password"
+					/>
 				{/snippet}
 			</form.Field>
 

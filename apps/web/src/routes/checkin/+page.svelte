@@ -9,7 +9,9 @@
 	} from "@tanstack/svelte-query";
 	import { z } from "zod";
 	import { authClient } from "$lib/auth-client";
+	import CheckInSuccessState from "$lib/components/matilha/check-in-success-state.svelte";
 	import Field from "$lib/components/matilha/Field.svelte";
+	import FormTextareaField from "$lib/components/matilha/form-textarea-field.svelte";
 	import { Button } from "$lib/components/ui/button/index.js";
 	import { Card } from "$lib/components/ui/card/index.js";
 	import { Loader } from "$lib/components/ui/loader/index.js";
@@ -228,30 +230,7 @@
 </script>
 
 {#if showSuccess}
-	<div class="mx-auto max-w-4xl px-4 py-12 md:px-6">
-		<motion.div
-			animate={{ opacity: 1, scale: 1 }}
-			class="text-center"
-			initial={{ opacity: 0, scale: 0.94 }}
-			transition={{ duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
-		>
-			<motion.div
-				animate={{ opacity: 1, scale: 1 }}
-				class="font-mono text-[28px] font-bold text-streak"
-				initial={{ opacity: 0, scale: 0.8 }}
-				transition={{ delay: 0.1, duration: 0.4, type: "spring", bounce: 0.35 }}
-			>
-				{postCheckIn.data?.streak ?? optimisticStreak}
-				{(postCheckIn.data?.streak ?? optimisticStreak) === 1
-					? "semana"
-					: "semanas"}
-			</motion.div>
-			<p class="mt-1 text-sm text-muted-foreground">
-				Check-in postado. Streak mantido.
-			</p>
-			<Button class="mt-4" href="/feed" variant="outline">Ver o feed</Button>
-		</motion.div>
-	</div>
+	<CheckInSuccessState streak={postCheckIn.data?.streak ?? optimisticStreak} />
 {:else}
 	<div class="mx-auto max-w-4xl px-4 py-8 md:px-6">
 		<div class="mb-6 border-border border-b pb-5">
@@ -337,68 +316,36 @@
 
 					<form.Field name="progress">
 						{#snippet children(field)}
-							<Field
-								error={field.state.meta.isTouched
-									? field.state.meta.errors[0]?.message
-									: undefined}
-								htmlFor={field.name}
+							<FormTextareaField
+								{field}
 								label="O que avançou essa semana"
-							>
-								<Textarea
-									id={field.name}
-									name={field.name}
-									onblur={field.handleBlur}
-									oninput={(e: Event) =>
-										field.handleChange((e.target as HTMLTextAreaElement).value)}
-									placeholder="Shipei, vendi, aprendi..."
-									rows={3}
-									value={field.state.value}
-								/>
-							</Field>
+								placeholder="Shipei, vendi, aprendi..."
+								rows={3}
+							/>
 						{/snippet}
 					</form.Field>
 
 					<form.Field name="blocked">
 						{#snippet children(field)}
-							<Field
-								error={field.state.meta.isTouched
-									? field.state.meta.errors[0]?.message
-									: undefined}
-								htmlFor={field.name}
+							<FormTextareaField
+								{field}
 								label="O que travou"
-							>
-								<Textarea
-									id={field.name}
-									name={field.name}
-									onblur={field.handleBlur}
-									oninput={(e: Event) =>
-										field.handleChange((e.target as HTMLTextAreaElement).value)}
-									placeholder="O que te segurou"
-									rows={3}
-									value={field.state.value}
-								/>
-							</Field>
+								placeholder="O que te segurou"
+								rows={3}
+							/>
 						{/snippet}
 					</form.Field>
 
 					<form.Field name="help">
 						{#snippet children(field)}
-							<Field
+							<FormTextareaField
+								{field}
 								hint="opcional"
-								htmlFor={field.name}
 								label="No que precisa de ajuda"
-							>
-								<Textarea
-									id={field.name}
-									name={field.name}
-									onblur={field.handleBlur}
-									oninput={(e: Event) =>
-										field.handleChange((e.target as HTMLTextAreaElement).value)}
-									placeholder="A matilha te ajuda"
-									rows={2}
-									value={field.state.value}
-								/>
-							</Field>
+								placeholder="A matilha te ajuda"
+								rows={2}
+								showError={false}
+							/>
 						{/snippet}
 					</form.Field>
 

@@ -6,9 +6,9 @@
 	import { goto } from "$app/navigation";
 	import { authClient } from "$lib/auth-client";
 	import Field from "$lib/components/matilha/Field.svelte";
+	import FormInputField from "$lib/components/matilha/form-input-field.svelte";
 	import { Button } from "$lib/components/ui/button/index.js";
 	import { Card } from "$lib/components/ui/card/index.js";
-	import { Input } from "$lib/components/ui/input/index.js";
 	import * as Select from "$lib/components/ui/select/index.js";
 	import { orpc } from "$lib/orpc";
 
@@ -94,80 +94,44 @@
 		>
 			<form.Field name="name">
 				{#snippet children(field)}
-					<Field
-						error={field.state.meta.isTouched ? field.state.meta.errors[0]?.message : undefined}
-						htmlFor={field.name}
+					<FormInputField
+						{field}
 						label="Nome"
-					>
-						<Input
-							id={field.name}
-							name={field.name}
-							onblur={field.handleBlur}
-							oninput={(e: Event) => field.handleChange((e.target as HTMLInputElement).value)}
-							placeholder="Como te chamam"
-							value={field.state.value}
-						/>
-					</Field>
+						placeholder="Como te chamam"
+					/>
 				{/snippet}
 			</form.Field>
 
 			<form.Field name="email">
 				{#snippet children(field)}
-					<Field
-						error={field.state.meta.isTouched ? field.state.meta.errors[0]?.message : undefined}
-						htmlFor={field.name}
+					<FormInputField
+						{field}
 						label="Email"
-					>
-						<Input
-							id={field.name}
-							name={field.name}
-							onblur={field.handleBlur}
-							oninput={(e: Event) => field.handleChange((e.target as HTMLInputElement).value)}
-							placeholder="seu@email.com"
-							type="email"
-							value={field.state.value}
-						/>
-					</Field>
+						placeholder="seu@email.com"
+						type="email"
+					/>
 				{/snippet}
 			</form.Field>
 
 			<form.Field name="password">
 				{#snippet children(field)}
-					<Field
-						error={field.state.meta.isTouched ? field.state.meta.errors[0]?.message : undefined}
-						htmlFor={field.name}
+					<FormInputField
+						{field}
 						label="Senha"
-					>
-						<Input
-							id={field.name}
-							name={field.name}
-							onblur={field.handleBlur}
-							oninput={(e: Event) => field.handleChange((e.target as HTMLInputElement).value)}
-							placeholder="••••••••"
-							type="password"
-							value={field.state.value}
-						/>
-					</Field>
+						placeholder="••••••••"
+						type="password"
+					/>
 				{/snippet}
 			</form.Field>
 
 			<form.Field name="phone">
 				{#snippet children(field)}
-					<Field
-						error={field.state.meta.isTouched ? field.state.meta.errors[0]?.message : undefined}
-						htmlFor={field.name}
+					<FormInputField
+						{field}
 						label="Telefone"
-					>
-						<Input
-							id={field.name}
-							name={field.name}
-							onblur={field.handleBlur}
-							oninput={(e: Event) => field.handleChange((e.target as HTMLInputElement).value)}
-							placeholder="(11) 91234-5678"
-							type="tel"
-							value={field.state.value}
-						/>
-					</Field>
+						placeholder="(11) 91234-5678"
+						type="tel"
+					/>
 				{/snippet}
 			</form.Field>
 

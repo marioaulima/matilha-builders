@@ -37,10 +37,6 @@
 		validators: { onSubmit: productSchema },
 	}));
 
-	$effect(() => {
-		form.reset(initialValues);
-	});
-
 	type SubmitState = Pick<typeof form.state, "canSubmit" | "isSubmitting">;
 </script>
 

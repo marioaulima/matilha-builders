@@ -33,7 +33,13 @@
 		}),
 		name: z.string().min(2, "Nome precisa ter pelo menos 2 letras"),
 		password: z.string().min(8, "Senha precisa ter pelo menos 8 caracteres"),
-		phone: z.string().min(8, "Telefone inválido"),
+		phone: z.string().refine(
+			(value) => {
+				const digits = value.replace(/\D/g, "");
+				return digits.length === 10 || digits.length === 11;
+			},
+			{ message: "Telefone inválido" }
+		),
 	});
 
 	const updateSignupDetails = createMutation(() => ({

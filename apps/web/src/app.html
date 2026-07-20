@@ -20,7 +20,11 @@
 			content="Só pra quem tá na matilha. Check-ins semanais, streaks e a rede de founders em execução."
 			property="og:description"
 		>
-		<meta content="%sveltekit.assets%/og-image.png" property="og:image">
+		<meta content="%sveltekit.env.PUBLIC_APP_URL%" property="og:url">
+		<meta
+			content="%sveltekit.env.PUBLIC_APP_URL%/og-image.png"
+			property="og:image"
+		>
 		<meta content="website" property="og:type">
 		<meta content="summary_large_image" name="twitter:card">
 		<meta content="matilha_builders" name="twitter:title">
@@ -28,7 +32,10 @@
 			content="Só pra quem tá na matilha. Check-ins semanais, streaks e a rede de founders em execução."
 			name="twitter:description"
 		>
-		<meta content="%sveltekit.assets%/og-image.png" name="twitter:image">
+		<meta
+			content="%sveltekit.env.PUBLIC_APP_URL%/og-image.png"
+			name="twitter:image"
+		>
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover">

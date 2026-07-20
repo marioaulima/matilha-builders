@@ -28,6 +28,30 @@
 		type?: "email" | "password" | "tel" | "text";
 		hint?: string;
 	} = $props();
+
+	function maskPhoneBR(value: string): string {
+		const digits = value.replace(/\D/g, "").slice(0, 11);
+		const ddd = digits.slice(0, 2);
+		const rest = digits.slice(2);
+
+		if (digits.length <= 2) {
+			return digits.length ? `(${ddd}` : "";
+		}
+		if (digits.length <= 6) {
+			return `(${ddd}) ${rest}`;
+		}
+		if (digits.length <= 10) {
+			return `(${ddd}) ${rest.slice(0, 4)}-${rest.slice(4)}`;
+		}
+		return `(${ddd}) ${rest.slice(0, 5)}-${rest.slice(5)}`;
+	}
+
+	function handleInput(event: Event) {
+		const target = event.target as HTMLInputElement;
+		const value = type === "tel" ? maskPhoneBR(target.value) : target.value;
+		target.value = value;
+		field.handleChange(value);
+	}
 </script>
 
 <Field
@@ -40,7 +64,7 @@
 		id={field.name}
 		name={field.name}
 		onblur={field.handleBlur}
-		oninput={(event: Event) => field.handleChange((event.target as HTMLInputElement).value)}
+		oninput={handleInput}
 		{placeholder}
 		{type}
 		value={field.state.value}

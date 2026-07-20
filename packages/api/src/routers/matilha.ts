@@ -1,4 +1,5 @@
 import { db } from "@matilha-builders/db";
+import { user } from "@matilha-builders/db/schema/auth";
 import {
 	checkIn,
 	checkInDismissalVote,
@@ -6,7 +7,16 @@ import {
 	product,
 } from "@matilha-builders/db/schema/matilha";
 import { ORPCError } from "@orpc/server";
-import { and, desc, eq, inArray, isNotNull, isNull, max } from "drizzle-orm";
+import {
+	and,
+	desc,
+	eq,
+	exists,
+	inArray,
+	isNotNull,
+	isNull,
+	max,
+} from "drizzle-orm";
 import { z } from "zod";
 
 import { protectedProcedure } from "../index";
@@ -15,6 +25,7 @@ import {
 	MAX_PRODUCTS_PER_FOUNDER,
 	PAGE_SIZE,
 } from "../lib/constants";
+import { normalizePhoneBR } from "../lib/phone";
 import {
 	computeCurrentStreak,
 	computeNextStreak,
@@ -337,6 +348,17 @@ export const matilhaRouter = {
 					limit: PAGE_SIZE,
 					offset: cursor,
 					orderBy: desc(founder.lastCheckInAt),
+					where: exists(
+						db
+							.select({ id: user.id })
+							.from(user)
+							.where(
+								and(
+									eq(user.id, founder.userId),
+									eq(user.approvalStatus, "approved")
+								)
+							)
+					),
 					with: {
 						products: { orderBy: desc(product.createdAt) },
 						user: true,
@@ -385,12 +407,18 @@ export const matilhaRouter = {
 				})
 			)
 			.handler(async ({ input, context }) => {
+				const phone = normalizePhoneBR(input.phone);
+				if (!phone) {
+					throw new ORPCError("BAD_REQUEST", {
+						message: "Telefone inválido.",
+					});
+				}
 				const founderId = context.session.user.id;
 				await db
 					.update(founder)
-					.set({ interest: input.interest, phone: input.phone })
+					.set({ interest: input.interest, phone })
 					.where(eq(founder.userId, founderId));
-				return { interest: input.interest, phone: input.phone };
+				return { interest: input.interest, phone };
 			}),
 	},
 	products: {

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { AnimatePresence, motion } from "@humanspeak/svelte-motion";
+	import PawPrintIcon from "@lucide/svelte/icons/paw-print";
 	import { createForm } from "@tanstack/svelte-form";
 	import { z } from "zod";
 	import { goto } from "$app/navigation";
@@ -59,7 +60,12 @@
 	transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
 >
 	<div class="mb-6 text-center">
-		<div class="font-mono text-2xl font-bold">matilha_builders</div>
+		<div
+			class="flex items-center justify-center gap-1.5 font-mono text-2xl font-bold"
+		>
+			<PawPrintIcon class="size-4 text-streak" fill="currentColor" />
+			<span>matilha_builders</span>
+		</div>
 		<p class="mt-1.5 text-sm text-muted-foreground">
 			Só pra quem tá na matilha.
 		</p>

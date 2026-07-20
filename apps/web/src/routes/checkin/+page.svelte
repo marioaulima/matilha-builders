@@ -110,6 +110,7 @@
 
 	const postCheckIn = createMutation(() => ({
 		...orpc.checkIns.create.mutationOptions(),
+		meta: { skipErrorToast: true },
 		onError: (
 			_error,
 			_input,

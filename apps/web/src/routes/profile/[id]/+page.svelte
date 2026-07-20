@@ -24,6 +24,7 @@
 		DrawerTitle,
 	} from "$lib/components/ui/drawer/index.js";
 	import { Separator } from "$lib/components/ui/separator/index.js";
+	import { toast } from "$lib/components/ui/sonner/index.js";
 	import { orpc } from "$lib/orpc";
 
 	const founderId = $derived(page.params.id ?? "");
@@ -100,6 +101,7 @@
 
 	const updateBio = createMutation(() => ({
 		...orpc.founders.updateBio.mutationOptions(),
+		meta: { skipErrorToast: true },
 		onError: (
 			_error,
 			_input,
@@ -132,6 +134,7 @@
 				restoreFounder(snapshot);
 				showEditProfile = true;
 				console.error(error);
+				toast.error("Não deu pra salvar o perfil. Tenta de novo.");
 			}
 		},
 		validators: { onSubmit: profileSchema },

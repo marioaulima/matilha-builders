@@ -7,6 +7,7 @@
 	import Avatar from "$lib/components/matilha/avatar.svelte";
 	import { Button } from "$lib/components/ui/button/index.js";
 	import * as Popover from "$lib/components/ui/popover/index.js";
+	import { toast } from "$lib/components/ui/sonner/index.js";
 	import { orpc } from "$lib/orpc";
 
 	const sessionQuery = authClient.useSession();
@@ -24,6 +25,7 @@
 			fetchOptions: {
 				onError: (error) => {
 					console.error("Sign out failed:", error);
+					toast.error("Não deu pra sair. Tenta de novo.");
 				},
 				onSuccess: () => goto("/login"),
 			},

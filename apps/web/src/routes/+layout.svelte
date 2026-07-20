@@ -7,6 +7,7 @@
 	import "../app.css";
 	import { authClient } from "$lib/auth-client";
 	import { Loader } from "$lib/components/ui/loader/index.js";
+	import { Toaster } from "$lib/components/ui/sonner/index.js";
 	import { queryClient } from "$lib/orpc";
 	import Header from "../components/header.svelte";
 
@@ -101,5 +102,6 @@
 			</div>
 		{/if}
 		<SvelteQueryDevtools />
+		<Toaster position="top-center" />
 	</QueryClientProvider>
 </MotionConfig>

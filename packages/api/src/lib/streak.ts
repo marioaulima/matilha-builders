@@ -1,3 +1,6 @@
+import { type SQL, sql } from "drizzle-orm";
+import type { AnyPgColumn } from "drizzle-orm/pg-core";
+
 const MAX_STREAK_GAP_DAYS = 14;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 export const ONE_WEEK_MS = 7 * MS_PER_DAY;
@@ -40,4 +43,23 @@ export function computeCurrentStreak(
 		(now.getTime() - lastCheckInAt.getTime()) / ONE_WEEK_MS
 	);
 	return weeksWithoutCheckIn >= 2 ? 1 - weeksWithoutCheckIn : previousStreak;
+}
+
+/**
+ * SQL mirror of computeCurrentStreak, for ORDER BY on the decayed streak
+ * value instead of the raw stored column.
+ */
+export function currentStreakSql(
+	streakColumn: AnyPgColumn,
+	lastCheckInColumn: AnyPgColumn,
+	now: Date
+): SQL<number> {
+	const weeksWithoutCheckIn = sql`floor(extract(epoch from (${now}::timestamptz - ${lastCheckInColumn})) / ${ONE_WEEK_MS / 1000})`;
+	return sql<number>`
+		case
+			when ${lastCheckInColumn} is null then ${streakColumn}
+			when ${weeksWithoutCheckIn} >= 2 then 1 - (${weeksWithoutCheckIn})::int
+			else ${streakColumn}
+		end
+	`;
 }

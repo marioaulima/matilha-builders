@@ -29,6 +29,7 @@ import { normalizePhoneBR } from "../lib/phone";
 import {
 	computeCurrentStreak,
 	computeNextStreak,
+	currentStreakSql,
 	ONE_WEEK_MS,
 } from "../lib/streak";
 
@@ -347,7 +348,18 @@ export const matilhaRouter = {
 				const rows = await db.query.founder.findMany({
 					limit: PAGE_SIZE,
 					offset: cursor,
-					orderBy: desc(founder.lastCheckInAt),
+					orderBy: [
+						desc(currentStreakSql(founder.streak, founder.lastCheckInAt, now)),
+						desc(
+							exists(
+								db
+									.select({ id: product.id })
+									.from(product)
+									.where(eq(product.founderId, founder.userId))
+							)
+						),
+						desc(founder.lastCheckInAt),
+					],
 					where: exists(
 						db
 							.select({ id: user.id })

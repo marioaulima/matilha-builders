@@ -71,6 +71,7 @@
 >
 {#if overlay}
 	<button
+		aria-label={label}
 		class="group/avatar relative rounded-full disabled:pointer-events-none"
 		disabled={$isUploading}
 		onclick={() => fileInput?.click()}
@@ -108,6 +109,7 @@
 	</button>
 {:else if iconOnly}
 	<button
+		aria-label={label}
 		class="flex size-8 items-center justify-center rounded-md border border-border transition-colors hover:bg-accent disabled:pointer-events-none disabled:opacity-50"
 		disabled={$isUploading}
 		onclick={() => fileInput?.click()}

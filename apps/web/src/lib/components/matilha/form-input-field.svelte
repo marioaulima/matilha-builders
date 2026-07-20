@@ -1,6 +1,7 @@
 <script lang="ts">
 	import EyeIcon from "@lucide/svelte/icons/eye";
 	import EyeOffIcon from "@lucide/svelte/icons/eye-off";
+	import type { HTMLInputAttributes } from "svelte/elements";
 	import { Input } from "$lib/components/ui/input/index.js";
 	import Field from "./field.svelte";
 
@@ -23,13 +24,22 @@
 		placeholder,
 		type = "text",
 		hint,
+		autocomplete,
 	}: {
 		field: FormField;
 		label: string;
 		placeholder?: string;
 		type?: "email" | "password" | "tel" | "text";
 		hint?: string;
+		autocomplete?: HTMLInputAttributes["autocomplete"];
 	} = $props();
+
+	const hasError = $derived(
+		field.state.meta.isTouched && Boolean(field.state.meta.errors[0]?.message)
+	);
+	const describedBy = $derived(
+		hasError ? `${field.name}-error` : hint ? `${field.name}-hint` : undefined
+	);
 
 	function maskPhoneBR(value: string): string {
 		const digits = value.replace(/\D/g, "").slice(0, 11);
@@ -67,6 +77,9 @@
 	{#if type === "password"}
 		<div class="relative">
 			<Input
+				aria-describedby={describedBy}
+				aria-invalid={hasError}
+				{autocomplete}
 				class="pr-9"
 				id={field.name}
 				name={field.name}
@@ -92,6 +105,9 @@
 		</div>
 	{:else}
 		<Input
+			aria-describedby={describedBy}
+			aria-invalid={hasError}
+			{autocomplete}
 			id={field.name}
 			name={field.name}
 			onblur={field.handleBlur}

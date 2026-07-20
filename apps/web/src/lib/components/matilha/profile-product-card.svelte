@@ -191,6 +191,7 @@
 								onUploaded={onImageUploaded}
 							/>
 							<button
+								aria-label="Editar produto"
 								class="flex size-8 items-center justify-center rounded-md border border-border transition-colors hover:bg-accent"
 								onclick={startEditing}
 								title="Editar produto"
@@ -199,6 +200,7 @@
 								<PencilIcon class="size-3.5" />
 							</button>
 							<button
+								aria-label="Excluir produto"
 								class="flex size-8 items-center justify-center rounded-md border border-border text-destructive transition-colors hover:bg-destructive/10"
 								onclick={requestDelete}
 								title="Excluir produto"

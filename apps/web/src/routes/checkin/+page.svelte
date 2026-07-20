@@ -262,6 +262,7 @@
 							exit={{ opacity: 0, y: -6 }}
 							initial={{ opacity: 0, y: -6 }}
 							key="submit-error"
+							role="alert"
 							transition={{ duration: 0.2 }}
 						>
 							Não deu pra postar o check-in. Tenta de novo.

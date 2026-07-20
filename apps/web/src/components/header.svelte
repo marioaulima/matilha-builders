@@ -40,7 +40,7 @@
 				<PawPrintIcon class="size-4 text-streak" fill="currentColor" />
 				<span class="hidden sm:inline">matilha_builders</span>
 			</a>
-			<nav class="hidden gap-1 md:flex">
+			<nav aria-label="Principal" class="hidden gap-1 md:flex">
 				{#each links as link (link.href)}
 					<a
 						class={cn(
@@ -76,7 +76,7 @@
 			<Drawer.Header>
 				<Drawer.Title>Menu</Drawer.Title>
 			</Drawer.Header>
-			<nav class="flex flex-col gap-1 px-4 pb-6">
+			<nav aria-label="Menu mobile" class="flex flex-col gap-1 px-4 pb-6">
 				{#each links as link (link.href)}
 					<a
 						class={cn(

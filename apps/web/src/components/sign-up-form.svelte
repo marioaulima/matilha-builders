@@ -100,12 +100,12 @@
 	transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
 >
 	<div class="mb-6 text-center">
-		<div
+		<h1
 			class="flex items-center justify-center gap-1.5 font-mono text-2xl font-bold"
 		>
 			<PawPrintIcon class="size-4 text-streak" fill="currentColor" />
 			<span>matilha_builders</span>
-		</div>
+		</h1>
 		<p class="mt-1.5 text-sm text-muted-foreground">Criar conta na matilha.</p>
 	</div>
 	<Card class="border border-border p-4">
@@ -125,6 +125,7 @@
 						exit={{ opacity: 0, y: -6 }}
 						initial={{ opacity: 0, y: -6 }}
 						key="error-message"
+						role="alert"
 						transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
 					>
 						{errorMessage}
@@ -134,13 +135,19 @@
 
 			<form.Field name="name">
 				{#snippet children(field)}
-					<FormInputField {field} label="Nome" placeholder="Como te chamam" />
+					<FormInputField
+						autocomplete="name"
+						{field}
+						label="Nome"
+						placeholder="Como te chamam"
+					/>
 				{/snippet}
 			</form.Field>
 
 			<form.Field name="email">
 				{#snippet children(field)}
 					<FormInputField
+						autocomplete="email"
 						{field}
 						label="Email"
 						placeholder="seu@email.com"
@@ -152,6 +159,7 @@
 			<form.Field name="password">
 				{#snippet children(field)}
 					<FormInputField
+						autocomplete="new-password"
 						{field}
 						label="Senha"
 						placeholder="••••••••"
@@ -163,6 +171,7 @@
 			<form.Field name="phone">
 				{#snippet children(field)}
 					<FormInputField
+						autocomplete="tel"
 						{field}
 						label="Telefone"
 						placeholder="(11) 91234-5678"

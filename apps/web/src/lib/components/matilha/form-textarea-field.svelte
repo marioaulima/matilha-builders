@@ -30,17 +30,26 @@
 		hint?: string;
 		showError?: boolean;
 	} = $props();
+
+	const hasError = $derived(
+		showError &&
+			field.state.meta.isTouched &&
+			Boolean(field.state.meta.errors[0]?.message)
+	);
+	const describedBy = $derived(
+		hasError ? `${field.name}-error` : hint ? `${field.name}-hint` : undefined
+	);
 </script>
 
 <Field
-	error={showError && field.state.meta.isTouched
-		? field.state.meta.errors[0]?.message
-		: undefined}
+	error={hasError ? field.state.meta.errors[0]?.message : undefined}
 	{hint}
 	htmlFor={field.name}
 	{label}
 >
 	<Textarea
+		aria-describedby={describedBy}
+		aria-invalid={hasError}
 		id={field.name}
 		name={field.name}
 		onblur={field.handleBlur}

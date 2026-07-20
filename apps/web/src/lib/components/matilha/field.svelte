@@ -23,8 +23,10 @@
 	{/if}
 	{@render children()}
 	{#if error}
-		<p class="text-sm text-destructive" role="alert">{error}</p>
+		<p class="text-sm text-destructive" id="{htmlFor}-error" role="alert">
+			{error}
+		</p>
 	{:else if hint}
-		<p class="text-xs text-muted-foreground">{hint}</p>
+		<p class="text-xs text-muted-foreground" id="{htmlFor}-hint">{hint}</p>
 	{/if}
 </div>

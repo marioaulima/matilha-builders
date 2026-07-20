@@ -41,6 +41,18 @@ function paginate<T>(items: T[], cursor: number) {
 	};
 }
 
+function hasProductWithStatus(
+	founderUserId: typeof founder.userId,
+	status: (typeof product.status.enumValues)[number]
+) {
+	return exists(
+		db
+			.select({ id: product.id })
+			.from(product)
+			.where(and(eq(product.founderId, founderUserId), eq(product.status, status)))
+	);
+}
+
 async function requireOwnedProduct(productId: string, founderId: string) {
 	const [row] = await db
 		.select({ founderId: product.founderId })
@@ -351,14 +363,9 @@ export const matilhaRouter = {
 					offset: cursor,
 					orderBy: [
 						desc(currentStreakSql(founder.streak, founder.lastCheckInAt, now)),
-						desc(
-							exists(
-								db
-									.select({ id: product.id })
-									.from(product)
-									.where(eq(product.founderId, founder.userId))
-							)
-						),
+						desc(hasProductWithStatus(founder.userId, "launched")),
+						desc(hasProductWithStatus(founder.userId, "building")),
+						desc(hasProductWithStatus(founder.userId, "validating")),
 						desc(founder.lastCheckInAt),
 					],
 					where: exists(

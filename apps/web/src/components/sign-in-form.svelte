@@ -12,23 +12,30 @@
 	let { switchToSignUp } = $props<{ switchToSignUp: () => void }>();
 
 	let pendingMessage = $state("");
+	let errorMessage = $state("");
 
 	const validationSchema = z.object({
 		email: z.email("Email inválido"),
 		password: z.string().min(1, "Senha é obrigatória"),
 	});
 
+	const errorMessages: Record<string, string> = {
+		INVALID_EMAIL_OR_PASSWORD: "Email ou senha incorretos.",
+	};
+
 	const form = createForm(() => ({
 		defaultValues: { email: "", password: "" },
 		onSubmit: async ({ value }) => {
 			pendingMessage = "";
+			errorMessage = "";
 			await authClient.signIn.email(
 				{ email: value.email, password: value.password },
 				{
 					onError: (error) => {
-						console.error(
-							error.error.message || "Não deu pra entrar. Tenta de novo."
-						);
+						errorMessage =
+							errorMessages[error.error.code ?? ""] ??
+							error.error.message ??
+							"Não deu pra entrar. Tenta de novo.";
 					},
 					onSuccess: async () => {
 						const { data } = await authClient.getSession();
@@ -90,6 +97,17 @@
 						transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
 					>
 						{pendingMessage}
+					</motion.div>
+				{:else if errorMessage}
+					<motion.div
+						animate={{ opacity: 1, y: 0 }}
+						class="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+						exit={{ opacity: 0, y: -6 }}
+						initial={{ opacity: 0, y: -6 }}
+						key="error-message"
+						transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+					>
+						{errorMessage}
 					</motion.div>
 				{/if}
 			</AnimatePresence>

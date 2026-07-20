@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { motion } from "@humanspeak/svelte-motion";
+	import { AnimatePresence, motion } from "@humanspeak/svelte-motion";
 	import PawPrintIcon from "@lucide/svelte/icons/paw-print";
 	import { createForm } from "@tanstack/svelte-form";
 	import { createMutation } from "@tanstack/svelte-query";
@@ -40,6 +40,12 @@
 		...orpc.founders.updateSignupDetails.mutationOptions(),
 	}));
 
+	let errorMessage = $state("");
+
+	const errorMessages: Record<string, string> = {
+		USER_ALREADY_EXISTS: "Já existe uma conta com esse email.",
+	};
+
 	const form = createForm(() => ({
 		defaultValues: {
 			email: "",
@@ -49,6 +55,7 @@
 			phone: "",
 		},
 		onSubmit: async ({ value }) => {
+			errorMessage = "";
 			await authClient.signUp.email(
 				{
 					email: value.email,
@@ -57,9 +64,10 @@
 				},
 				{
 					onError: (error) => {
-						console.error(
-							error.error.message || "Não deu pra criar a conta. Tenta de novo."
-						);
+						errorMessage =
+							errorMessages[error.error.code ?? ""] ??
+							error.error.message ??
+							"Não deu pra criar a conta. Tenta de novo.";
 					},
 					onSuccess: async () => {
 						await updateSignupDetails.mutateAsync({
@@ -103,6 +111,21 @@
 				form.handleSubmit();
 			}}
 		>
+			<AnimatePresence>
+				{#if errorMessage}
+					<motion.div
+						animate={{ opacity: 1, y: 0 }}
+						class="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+						exit={{ opacity: 0, y: -6 }}
+						initial={{ opacity: 0, y: -6 }}
+						key="error-message"
+						transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+					>
+						{errorMessage}
+					</motion.div>
+				{/if}
+			</AnimatePresence>
+
 			<form.Field name="name">
 				{#snippet children(field)}
 					<FormInputField {field} label="Nome" placeholder="Como te chamam" />

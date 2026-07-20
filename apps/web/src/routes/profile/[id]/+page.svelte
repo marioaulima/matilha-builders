@@ -23,6 +23,7 @@
 		DrawerHeader,
 		DrawerTitle,
 	} from "$lib/components/ui/drawer/index.js";
+	import { Loader } from "$lib/components/ui/loader/index.js";
 	import { Separator } from "$lib/components/ui/separator/index.js";
 	import { toast } from "$lib/components/ui/sonner/index.js";
 	import { orpc } from "$lib/orpc";
@@ -146,7 +147,11 @@
 	}
 </script>
 
-{#if founderQuery.data}
+{#if founderQuery.isLoading}
+	<div class="mx-auto max-w-4xl px-4 py-6 md:px-6">
+		<Loader size="sm" subtitle="Buscando o perfil" title="Carregando..." />
+	</div>
+{:else if founderQuery.data}
 	{@const founder = founderQuery.data as FounderData}
 	<div class="mx-auto max-w-4xl px-4 py-6 md:px-6">
 		<ProfileHeader

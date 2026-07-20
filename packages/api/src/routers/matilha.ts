@@ -25,6 +25,7 @@ import {
 	MAX_PRODUCTS_PER_FOUNDER,
 	PAGE_SIZE,
 } from "../lib/constants";
+import { fetchOgImage } from "../lib/og-image";
 import { normalizePhoneBR } from "../lib/phone";
 import {
 	computeCurrentStreak,
@@ -455,11 +456,15 @@ export const matilhaRouter = {
 						message: `Você já atingiu o limite de ${MAX_PRODUCTS_PER_FOUNDER} produtos.`,
 					});
 				}
+				const imageUrl = input.link
+					? await fetchOgImage(input.link)
+					: undefined;
 				const [row] = await db
 					.insert(product)
 					.values({
 						founderId,
 						icp: input.icp || undefined,
+						imageUrl,
 						link: input.link || undefined,
 						name: input.name,
 						painPoint: input.painPoint || undefined,
@@ -533,11 +538,25 @@ export const matilhaRouter = {
 			.handler(async ({ input, context }) => {
 				const founderId = context.session.user.id;
 				const { id, ...patch } = input;
+				const nextLink = patch.link === "" ? null : patch.link;
+
+				let imageUrl: string | undefined;
+				if (nextLink) {
+					const [existing] = await db
+						.select({ imageUrl: product.imageUrl, link: product.link })
+						.from(product)
+						.where(and(eq(product.id, id), eq(product.founderId, founderId)));
+					if (existing && !existing.imageUrl && existing.link !== nextLink) {
+						imageUrl = (await fetchOgImage(nextLink)) ?? undefined;
+					}
+				}
+
 				const [row] = await db
 					.update(product)
 					.set({
 						...patch,
-						link: patch.link === "" ? null : patch.link,
+						...(imageUrl ? { imageUrl } : {}),
+						link: nextLink,
 					})
 					.where(and(eq(product.id, id), eq(product.founderId, founderId)))
 					.returning();

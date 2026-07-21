@@ -10,13 +10,15 @@ The check-in API rejects a second check-in for the same product when the latest 
 
 ## Design
 
-The API will continue verifying that a selected product belongs to the authenticated founder, but it will no longer query the latest check-in or reject a new one based on age. The products endpoint will return the founder's products directly, without calculating weekly lock metadata. The check-in form will render every product as selectable and remove the weekly-lock message.
+The API will continue verifying that a selected product belongs to the authenticated founder, but it will no longer query the latest check-in or reject a new one based on age. The check-in form will render every product as selectable and remove the weekly-lock message.
+
+The products endpoint will temporarily retain its `checkInLockedUntil` metadata calculation. The form no longer consumes that value, so it cannot restrict posting. Keeping the response shape unchanged avoids an import-level merge conflict with open PR #3, which adds check-in editing logic beside the same streak constants.
 
 The existing streak calculation remains unchanged. It stores every accepted check-in while allowing at most one streak increment within a seven-day period.
 
 ## Compatibility
 
-No schema or migration changes are required. The change removes the additive `checkInLockedUntil` response property, which is used only by the check-in form. Open PR #3 also changes `packages/api/src/routers/matilha.ts`, but in separate helper and procedure sections; this work will keep the router edits limited to `checkIns.create`, `products.mine`, and now-unused imports.
+No schema, migration, or API response changes are required. Open PR #3 also changes `packages/api/src/routers/matilha.ts`; retaining the products response metadata keeps this work's router edit limited to `checkIns.create`, allowing the two branches to merge cleanly.
 
 ## Verification
 

@@ -4,7 +4,7 @@
 
 **Goal:** Allow founders to post unlimited check-ins in a week while advancing their streak at most once in that period.
 
-**Architecture:** Remove the per-product time gate from the create procedure and the matching lock metadata from the products query. The check-in form will treat every owned product as selectable, while the existing streak calculation continues to absorb same-week posts without incrementing the streak.
+**Architecture:** Remove the per-product time gate from the create procedure and make the check-in form treat every owned product as selectable. Keep the existing products response shape to avoid conflicting with open PR #3; the form ignores its lock metadata, while the existing streak calculation continues to absorb same-week posts without incrementing the streak.
 
 **Tech Stack:** TypeScript, oRPC, Drizzle ORM, Vitest, Svelte 5, pnpm/Turborepo
 
@@ -14,7 +14,7 @@
 
 **Files:**
 - Create: `packages/api/src/routers/matilha.test.ts`
-- Modify: `packages/api/src/routers/matilha.ts:10-35,153-177,500-534`
+- Modify: `packages/api/src/routers/matilha.ts:153-177`
 
 - [ ] **Step 1: Write the failing router regression test**
 
@@ -106,41 +106,15 @@ pnpm --filter @matilha-builders/api test -- src/routers/matilha.test.ts
 
 Expected: FAIL because `checkIns.create` throws the current `BAD_REQUEST` message for a recent same-product check-in.
 
-- [ ] **Step 3: Remove the API gate and lock metadata**
+- [ ] **Step 3: Remove the API gate**
 
-In `packages/api/src/routers/matilha.ts`, reduce the Drizzle and streak imports to:
-
-```ts
-import { and, desc, eq, exists, inArray, isNull } from "drizzle-orm";
-```
-
-```ts
-import {
-	computeCurrentStreak,
-	computeNextStreak,
-	currentStreakSql,
-} from "../lib/streak";
-```
-
-Keep product ownership validation in `checkIns.create`, but remove the latest-check-in query and rejection:
+Keep product ownership validation in `checkIns.create`, but remove the latest-check-in query and rejection. Leave `products.mine` unchanged so its existing response remains compatible with open PR #3:
 
 ```ts
 const founderId = context.session.user.id;
 if (input.productId) {
 	await requireOwnedProduct(input.productId, founderId);
 }
-```
-
-Replace `products.mine` with the direct owned-products query:
-
-```ts
-mine: protectedProcedure.handler(async ({ context }) =>
-	db
-		.select()
-		.from(product)
-		.where(eq(product.founderId, context.session.user.id))
-		.orderBy(desc(product.createdAt))
-),
 ```
 
 - [ ] **Step 4: Run the focused and full API tests and verify GREEN**

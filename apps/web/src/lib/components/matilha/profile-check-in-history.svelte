@@ -20,6 +20,7 @@
 		blocked: string;
 		createdAt: string | Date;
 		dismissedAt?: string | Date | null;
+		founderId: string;
 		help: string | null;
 		id: string;
 		product: Product | null;

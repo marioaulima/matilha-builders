@@ -17,7 +17,7 @@
 
 	type CheckIn = {
 		id: string;
-		founderId?: string;
+		founderId: string;
 		name: string;
 		product: Product | null;
 		progress: string;
@@ -68,10 +68,17 @@
 	{/if}
 	<div class="mb-3 flex items-center justify-between gap-3">
 		{#if showAuthor}
-			<span class="flex items-center gap-2 text-sm font-semibold">
+			<a
+				aria-label="Ver perfil de {checkIn.name}"
+				class="group flex w-fit items-center gap-2 rounded text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+				href="/profile/{checkIn.founderId}"
+			>
 				<Avatar name={checkIn.name} size="sm" src={checkIn.avatarUrl} />
-				{checkIn.name}
-			</span>
+				<span
+					class="underline decoration-muted-foreground/40 underline-offset-2 transition-colors group-hover:decoration-foreground"
+					>{checkIn.name}</span
+				>
+			</a>
 			<span class="flex items-center gap-2">
 				{#if checkIn.product}
 					<ProductChip

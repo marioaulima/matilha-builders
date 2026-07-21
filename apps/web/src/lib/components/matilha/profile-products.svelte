@@ -40,7 +40,7 @@
 	type HistoryData = Awaited<ReturnType<typeof historyQueryData>>;
 
 	const queryClient = useQueryClient();
-	let open = $state(false);
+	let open = $state(true);
 	let showAddProduct = $state(false);
 	let productPreviews = $state<Record<string, string>>({});
 

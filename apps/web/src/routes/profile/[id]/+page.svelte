@@ -53,7 +53,7 @@
 
 	const queryClient = useQueryClient();
 	let avatarPreview = $state<string | null>(null);
-	let checkInsOpen = $state(false);
+	let checkInsOpen = $state(true);
 	let showEditProfile = $state(false);
 
 	function founderQueryKey() {

@@ -6,6 +6,12 @@ const MS_PER_DAY = 24 * 60 * 60 * 1000;
 export const ONE_WEEK_MS = 7 * MS_PER_DAY;
 
 /**
+ * A check-in stays editable through its own week and the next one — the same
+ * two-week slack the streak allows — after which it's locked.
+ */
+export const EDIT_WINDOW_MS = 2 * ONE_WEEK_MS;
+
+/**
  * Weekly check-in cadence with two weeks of slack: a check-in before a full
  * two-week gap continues the streak; a longer gap resets it to 1. Multiple
  * check-ins within the same week (any product) don't advance the streak

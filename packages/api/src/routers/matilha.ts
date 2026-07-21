@@ -31,6 +31,7 @@ import {
 	computeCurrentStreak,
 	computeNextStreak,
 	currentStreakSql,
+	EDIT_WINDOW_MS,
 	ONE_WEEK_MS,
 } from "../lib/streak";
 
@@ -66,9 +67,10 @@ async function requireOwnedProduct(productId: string, founderId: string) {
 	}
 }
 
-async function requireOwnedActiveCheckIn(checkInId: string, founderId: string) {
+async function requireEditableCheckIn(checkInId: string, founderId: string) {
 	const [row] = await db
 		.select({
+			createdAt: checkIn.createdAt,
 			dismissedAt: checkIn.dismissedAt,
 			founderId: checkIn.founderId,
 		})
@@ -82,6 +84,12 @@ async function requireOwnedActiveCheckIn(checkInId: string, founderId: string) {
 		throw new ORPCError("BAD_REQUEST", {
 			message:
 				"Esse check-in foi desconsiderado pela comunidade e não pode mais ser alterado.",
+		});
+	}
+	if (Date.now() - row.createdAt.getTime() >= EDIT_WINDOW_MS) {
+		throw new ORPCError("BAD_REQUEST", {
+			message:
+				"A janela de edição desse check-in fechou. Só dá pra editar durante a semana dele e a seguinte.",
 		});
 	}
 }
@@ -222,35 +230,6 @@ export const matilhaRouter = {
 					.where(eq(founder.userId, founderId));
 				return { streak: nextStreak };
 			}),
-		update: protectedProcedure
-			.input(
-				z.object({
-					blocked: z.string().min(1),
-					help: z.string().optional(),
-					id: z.string(),
-					progress: z.string().min(1),
-				})
-			)
-			.handler(async ({ input, context }) => {
-				const founderId = context.session.user.id;
-				await requireOwnedActiveCheckIn(input.id, founderId);
-				await db
-					.update(checkIn)
-					.set({
-						blocked: input.blocked,
-						help: input.help ?? null,
-						progress: input.progress,
-					})
-					.where(eq(checkIn.id, input.id));
-			}),
-		delete: protectedProcedure
-			.input(z.object({ id: z.string() }))
-			.handler(async ({ input, context }) => {
-				const founderId = context.session.user.id;
-				await requireOwnedActiveCheckIn(input.id, founderId);
-				await db.delete(checkIn).where(eq(checkIn.id, input.id));
-				await recomputeFounderStreak(founderId);
-			}),
 		dismissVote: protectedProcedure
 			.input(z.object({ checkInId: z.string() }))
 			.handler(async ({ input, context }) => {
@@ -370,6 +349,27 @@ export const matilhaRouter = {
 					context.session.user.id
 				);
 				return paginate(items, cursor);
+			}),
+		update: protectedProcedure
+			.input(
+				z.object({
+					blocked: z.string().min(1),
+					help: z.string().optional(),
+					id: z.string(),
+					progress: z.string().min(1),
+				})
+			)
+			.handler(async ({ input, context }) => {
+				const founderId = context.session.user.id;
+				await requireEditableCheckIn(input.id, founderId);
+				await db
+					.update(checkIn)
+					.set({
+						blocked: input.blocked,
+						help: input.help ?? null,
+						progress: input.progress,
+					})
+					.where(eq(checkIn.id, input.id));
 			}),
 	},
 	founders: {

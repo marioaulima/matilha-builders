@@ -2,7 +2,6 @@
 	import { motion } from "@humanspeak/svelte-motion";
 	import FlagIcon from "@lucide/svelte/icons/flag";
 	import PencilIcon from "@lucide/svelte/icons/pencil";
-	import Trash2Icon from "@lucide/svelte/icons/trash-2";
 	import { createMutation, useQueryClient } from "@tanstack/svelte-query";
 	import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
 	import { Button } from "$lib/components/ui/button/index.js";
@@ -52,11 +51,19 @@
 		isVoting?: boolean;
 	} = $props();
 
+	// A check-in stays editable through its own week and the next one — mirrors
+	// EDIT_WINDOW_MS on the server, which rejects edits past this window.
+	const EDIT_WINDOW_MS = 14 * 24 * 60 * 60 * 1000;
+
 	const isDismissed = $derived(!!checkIn.dismissedAt);
 	const isOwner = $derived(checkIn.founderId === currentUserId);
+	const isEditable = $derived(
+		isOwner &&
+			!isDismissed &&
+			Date.now() - new Date(checkIn.createdAt).getTime() < EDIT_WINDOW_MS
+	);
 	let confirmOpen = $state(false);
 	let editOpen = $state(false);
-	let confirmingDelete = $state(false);
 
 	const queryClient = useQueryClient();
 
@@ -94,22 +101,6 @@
 		}
 	}
 
-	function removeFromLists(id: string) {
-		for (const queryKey of listKeys()) {
-			queryClient.setQueriesData<InfiniteCheckIns>({ queryKey }, (old) =>
-				old
-					? {
-							...old,
-							pages: old.pages.map((page) => ({
-								...page,
-								items: page.items.filter((item) => item.id !== id),
-							})),
-						}
-					: old
-			);
-		}
-	}
-
 	function invalidateLists() {
 		for (const queryKey of listKeys()) {
 			queryClient.invalidateQueries({ queryKey });
@@ -132,23 +123,6 @@
 		},
 	}));
 
-	const deleteMutation = createMutation(() => ({
-		...orpc.checkIns.delete.mutationOptions(),
-		meta: { skipErrorToast: true },
-		onError: () => {
-			toast.error("Não deu pra excluir o check-in. Tenta de novo.");
-			invalidateLists();
-		},
-		onMutate: (input) => {
-			removeFromLists(input.id);
-		},
-		onSuccess: () => {
-			// Delete recomputes the founder's streak server-side.
-			queryClient.invalidateQueries({ queryKey: orpc.founders.get.key() });
-			queryClient.invalidateQueries({ queryKey: orpc.founders.list.key() });
-		},
-	}));
-
 	function saveEdit(value: EditorValues) {
 		editOpen = false;
 		editMutation.mutate({
@@ -168,14 +142,6 @@
 			progress: checkIn.progress,
 		});
 		editOpen = true;
-	}
-
-	function requestDelete() {
-		confirmingDelete = true;
-	}
-
-	function confirmDelete() {
-		deleteMutation.mutate({ id: checkIn.id });
 	}
 </script>
 
@@ -254,7 +220,7 @@
 			</div>
 		{/if}
 	</div>
-	{#if !isDismissed && (isOwner || (showAuthor && onDismissVote))}
+	{#if !isDismissed && ((isOwner && isEditable) || (!isOwner && showAuthor && onDismissVote))}
 		<div
 			class="mt-3 flex items-center justify-end gap-2 border-t border-border/60 pt-3"
 		>
@@ -268,15 +234,6 @@
 					type="button"
 				>
 					<PencilIcon class="size-3.5" />
-				</button>
-				<button
-					aria-label="Excluir check-in"
-					class="flex size-8 items-center justify-center rounded-md border border-border text-destructive transition-colors hover:bg-destructive/10"
-					onclick={requestDelete}
-					title="Excluir check-in"
-					type="button"
-				>
-					<Trash2Icon class="size-3.5" />
 				</button>
 			{:else if checkIn.hasVoted}
 				<span class="flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -331,29 +288,12 @@
 		</div>
 	{/if}
 
-	{#if isOwner}
+	{#if isEditable}
 		<CheckInEditor
 			isSaving={editMutation.isPending}
 			onSave={saveEdit}
 			bind:this={editor}
 			bind:open={editOpen}
 		/>
-		<AlertDialog.Root bind:open={confirmingDelete}>
-			<AlertDialog.Content>
-				<AlertDialog.Header>
-					<AlertDialog.Title>Excluir esse check-in?</AlertDialog.Title>
-					<AlertDialog.Description>
-						Essa ação não pode ser desfeita. O check-in some do feed e do teu
-						perfil, e teu streak é recalculado sem ele.
-					</AlertDialog.Description>
-				</AlertDialog.Header>
-				<AlertDialog.Footer>
-					<AlertDialog.Cancel>Cancelar</AlertDialog.Cancel>
-					<AlertDialog.Action onclick={confirmDelete} variant="destructive">
-						Excluir
-					</AlertDialog.Action>
-				</AlertDialog.Footer>
-			</AlertDialog.Content>
-		</AlertDialog.Root>
 	{/if}
 </motion.div>

@@ -66,6 +66,26 @@ async function requireOwnedProduct(productId: string, founderId: string) {
 	}
 }
 
+async function requireOwnedActiveCheckIn(checkInId: string, founderId: string) {
+	const [row] = await db
+		.select({
+			dismissedAt: checkIn.dismissedAt,
+			founderId: checkIn.founderId,
+		})
+		.from(checkIn)
+		.where(eq(checkIn.id, checkInId))
+		.limit(1);
+	if (!row || row.founderId !== founderId) {
+		throw new ORPCError("NOT_FOUND");
+	}
+	if (row.dismissedAt) {
+		throw new ORPCError("BAD_REQUEST", {
+			message:
+				"Esse check-in foi desconsiderado pela comunidade e não pode mais ser alterado.",
+		});
+	}
+}
+
 async function recomputeFounderStreak(founderId: string) {
 	const remaining = await db
 		.select({ createdAt: checkIn.createdAt })
@@ -201,6 +221,35 @@ export const matilhaRouter = {
 					.set({ lastCheckInAt: now, streak: nextStreak })
 					.where(eq(founder.userId, founderId));
 				return { streak: nextStreak };
+			}),
+		update: protectedProcedure
+			.input(
+				z.object({
+					blocked: z.string().min(1),
+					help: z.string().optional(),
+					id: z.string(),
+					progress: z.string().min(1),
+				})
+			)
+			.handler(async ({ input, context }) => {
+				const founderId = context.session.user.id;
+				await requireOwnedActiveCheckIn(input.id, founderId);
+				await db
+					.update(checkIn)
+					.set({
+						blocked: input.blocked,
+						help: input.help ?? null,
+						progress: input.progress,
+					})
+					.where(eq(checkIn.id, input.id));
+			}),
+		delete: protectedProcedure
+			.input(z.object({ id: z.string() }))
+			.handler(async ({ input, context }) => {
+				const founderId = context.session.user.id;
+				await requireOwnedActiveCheckIn(input.id, founderId);
+				await db.delete(checkIn).where(eq(checkIn.id, input.id));
+				await recomputeFounderStreak(founderId);
 			}),
 		dismissVote: protectedProcedure
 			.input(z.object({ checkInId: z.string() }))

@@ -30,6 +30,7 @@
 	let {
 		history,
 		founderName,
+		currentUserId = null,
 		hasNextPage,
 		isFetchingNextPage,
 		onLoadMore,
@@ -37,6 +38,7 @@
 	}: {
 		history: CheckIn[];
 		founderName: string;
+		currentUserId?: string | null;
 		hasNextPage: boolean;
 		isFetchingNextPage: boolean;
 		onLoadMore: () => void;
@@ -67,6 +69,7 @@
 				{#each history as checkIn, index (checkIn.id)}
 					<CheckInItem
 						checkIn={{ ...checkIn, name: founderName }}
+						{currentUserId}
 						{index}
 						showAuthor={false}
 					/>

@@ -226,6 +226,7 @@
 		<ProfileProducts {founderId} {isOwnProfile} />
 		<Separator class="mb-6" />
 		<ProfileCheckInHistory
+			currentUserId={$sessionQuery.data?.user.id ?? null}
 			founderName={founder.name}
 			hasNextPage={historyQuery.hasNextPage}
 			{history}

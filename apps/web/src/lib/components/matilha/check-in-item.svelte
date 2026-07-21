@@ -1,10 +1,16 @@
 <script lang="ts">
 	import { motion } from "@humanspeak/svelte-motion";
 	import FlagIcon from "@lucide/svelte/icons/flag";
+	import PencilIcon from "@lucide/svelte/icons/pencil";
+	import Trash2Icon from "@lucide/svelte/icons/trash-2";
+	import { createMutation, useQueryClient } from "@tanstack/svelte-query";
 	import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
 	import { Button } from "$lib/components/ui/button/index.js";
+	import { toast } from "$lib/components/ui/sonner/index.js";
 	import { formatRelative } from "$lib/format";
+	import { orpc } from "$lib/orpc";
 	import Avatar from "./avatar.svelte";
+	import CheckInEditor from "./check-in-editor.svelte";
 	import ProductChip from "./product-chip.svelte";
 
 	type Product = {
@@ -47,7 +53,130 @@
 	} = $props();
 
 	const isDismissed = $derived(!!checkIn.dismissedAt);
+	const isOwner = $derived(checkIn.founderId === currentUserId);
 	let confirmOpen = $state(false);
+	let editOpen = $state(false);
+	let confirmingDelete = $state(false);
+
+	const queryClient = useQueryClient();
+
+	type CheckInListItem = {
+		id: string;
+		progress: string;
+		blocked: string;
+		help: string | null;
+	};
+	type InfiniteCheckIns = {
+		pageParams: unknown[];
+		pages: { items: CheckInListItem[]; nextCursor?: number }[];
+	};
+	type EditorValues = { progress: string; blocked: string; help: string };
+
+	function listKeys() {
+		return [orpc.checkIns.listFeed.key(), orpc.checkIns.listByFounder.key()];
+	}
+
+	function patchLists(id: string, patch: Partial<CheckInListItem>) {
+		for (const queryKey of listKeys()) {
+			queryClient.setQueriesData<InfiniteCheckIns>({ queryKey }, (old) =>
+				old
+					? {
+							...old,
+							pages: old.pages.map((page) => ({
+								...page,
+								items: page.items.map((item) =>
+									item.id === id ? { ...item, ...patch } : item
+								),
+							})),
+						}
+					: old
+			);
+		}
+	}
+
+	function removeFromLists(id: string) {
+		for (const queryKey of listKeys()) {
+			queryClient.setQueriesData<InfiniteCheckIns>({ queryKey }, (old) =>
+				old
+					? {
+							...old,
+							pages: old.pages.map((page) => ({
+								...page,
+								items: page.items.filter((item) => item.id !== id),
+							})),
+						}
+					: old
+			);
+		}
+	}
+
+	function invalidateLists() {
+		for (const queryKey of listKeys()) {
+			queryClient.invalidateQueries({ queryKey });
+		}
+	}
+
+	const editMutation = createMutation(() => ({
+		...orpc.checkIns.update.mutationOptions(),
+		meta: { skipErrorToast: true },
+		onError: () => {
+			toast.error("Não deu pra salvar o check-in. Tenta de novo.");
+			invalidateLists();
+		},
+		onMutate: (input) => {
+			patchLists(input.id, {
+				blocked: input.blocked,
+				help: input.help ?? null,
+				progress: input.progress,
+			});
+		},
+	}));
+
+	const deleteMutation = createMutation(() => ({
+		...orpc.checkIns.delete.mutationOptions(),
+		meta: { skipErrorToast: true },
+		onError: () => {
+			toast.error("Não deu pra excluir o check-in. Tenta de novo.");
+			invalidateLists();
+		},
+		onMutate: (input) => {
+			removeFromLists(input.id);
+		},
+		onSuccess: () => {
+			// Delete recomputes the founder's streak server-side.
+			queryClient.invalidateQueries({ queryKey: orpc.founders.get.key() });
+			queryClient.invalidateQueries({ queryKey: orpc.founders.list.key() });
+		},
+	}));
+
+	function saveEdit(value: EditorValues) {
+		editOpen = false;
+		editMutation.mutate({
+			blocked: value.blocked,
+			help: value.help || undefined,
+			id: checkIn.id,
+			progress: value.progress,
+		});
+	}
+
+	let editor = $state<{ prime: (v: EditorValues) => void }>();
+
+	function startEditing() {
+		editor?.prime({
+			blocked: checkIn.blocked,
+			help: checkIn.help ?? "",
+			progress: checkIn.progress,
+		});
+		editOpen = true;
+	}
+
+	function requestDelete() {
+		confirmingDelete = true;
+	}
+
+	function confirmDelete() {
+		deleteMutation.mutate({ id: checkIn.id });
+	}
 </script>
 
 <motion.div
@@ -125,12 +254,30 @@
 			</div>
 		{/if}
 	</div>
-	{#if showAuthor && onDismissVote && !isDismissed}
+	{#if !isDismissed && (isOwner || (showAuthor && onDismissVote))}
 		<div
 			class="mt-3 flex items-center justify-end gap-2 border-t border-border/60 pt-3"
 		>
-			{#if checkIn.founderId === currentUserId}
-				<span class="text-xs text-muted-foreground">Seu check-in</span>
+			{#if isOwner}
+				<span class="mr-auto text-xs text-muted-foreground">Seu check-in</span>
+				<button
+					aria-label="Editar check-in"
+					class="flex size-8 items-center justify-center rounded-md border border-border transition-colors hover:bg-accent"
+					onclick={startEditing}
+					title="Editar check-in"
+					type="button"
+				>
+					<PencilIcon class="size-3.5" />
+				</button>
+				<button
+					aria-label="Excluir check-in"
+					class="flex size-8 items-center justify-center rounded-md border border-border text-destructive transition-colors hover:bg-destructive/10"
+					onclick={requestDelete}
+					title="Excluir check-in"
+					type="button"
+				>
+					<Trash2Icon class="size-3.5" />
+				</button>
 			{:else if checkIn.hasVoted}
 				<span class="flex items-center gap-1.5 text-xs text-muted-foreground">
 					<FlagIcon class="size-3.5" />
@@ -182,5 +329,31 @@
 				</AlertDialog.Root>
 			{/if}
 		</div>
+	{/if}
+
+	{#if isOwner}
+		<CheckInEditor
+			isSaving={editMutation.isPending}
+			onSave={saveEdit}
+			bind:this={editor}
+			bind:open={editOpen}
+		/>
+		<AlertDialog.Root bind:open={confirmingDelete}>
+			<AlertDialog.Content>
+				<AlertDialog.Header>
+					<AlertDialog.Title>Excluir esse check-in?</AlertDialog.Title>
+					<AlertDialog.Description>
+						Essa ação não pode ser desfeita. O check-in some do feed e do teu
+						perfil, e teu streak é recalculado sem ele.
+					</AlertDialog.Description>
+				</AlertDialog.Header>
+				<AlertDialog.Footer>
+					<AlertDialog.Cancel>Cancelar</AlertDialog.Cancel>
+					<AlertDialog.Action onclick={confirmDelete} variant="destructive">
+						Excluir
+					</AlertDialog.Action>
+				</AlertDialog.Footer>
+			</AlertDialog.Content>
+		</AlertDialog.Root>
 	{/if}
 </motion.div>

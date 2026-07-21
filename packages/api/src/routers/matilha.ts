@@ -182,26 +182,6 @@ export const matilhaRouter = {
 				const founderId = context.session.user.id;
 				if (input.productId) {
 					await requireOwnedProduct(input.productId, founderId);
-					const [lastForProduct] = await db
-						.select({ createdAt: checkIn.createdAt })
-						.from(checkIn)
-						.where(
-							and(
-								eq(checkIn.founderId, founderId),
-								eq(checkIn.productId, input.productId)
-							)
-						)
-						.orderBy(desc(checkIn.createdAt))
-						.limit(1);
-					if (
-						lastForProduct &&
-						Date.now() - lastForProduct.createdAt.getTime() < ONE_WEEK_MS
-					) {
-						throw new ORPCError("BAD_REQUEST", {
-							message:
-								"Esse produto já recebeu um check-in essa semana. Espera a semana que vem.",
-						});
-					}
 				}
 				const [profile] = await db
 					.select({

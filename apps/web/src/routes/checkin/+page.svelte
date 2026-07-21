@@ -293,17 +293,8 @@
 										</Select.Trigger>
 										<Select.Content>
 											{#each products as p (p.id)}
-												<Select.Item
-													disabled={!!p.checkInLockedUntil}
-													label={p.name}
-													value={p.id}
-												>
+												<Select.Item label={p.name} value={p.id}>
 													{p.name}
-													{#if p.checkInLockedUntil}
-														<span class="text-muted-foreground text-xs">
-															(já fez check-in essa semana)
-														</span>
-													{/if}
 												</Select.Item>
 											{/each}
 										</Select.Content>

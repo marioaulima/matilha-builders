@@ -1,10 +1,15 @@
 <script lang="ts">
 	import { motion } from "@humanspeak/svelte-motion";
 	import FlagIcon from "@lucide/svelte/icons/flag";
+	import PencilIcon from "@lucide/svelte/icons/pencil";
+	import { createMutation, useQueryClient } from "@tanstack/svelte-query";
 	import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
 	import { Button } from "$lib/components/ui/button/index.js";
+	import { toast } from "$lib/components/ui/sonner/index.js";
 	import { formatRelative } from "$lib/format";
+	import { orpc } from "$lib/orpc";
 	import Avatar from "./avatar.svelte";
+	import CheckInEditor from "./check-in-editor.svelte";
 	import ProductChip from "./product-chip.svelte";
 
 	type Product = {
@@ -46,8 +51,98 @@
 		isVoting?: boolean;
 	} = $props();
 
+	// A check-in stays editable through its own week and the next one — mirrors
+	// EDIT_WINDOW_MS on the server, which rejects edits past this window.
+	const EDIT_WINDOW_MS = 14 * 24 * 60 * 60 * 1000;
+
 	const isDismissed = $derived(!!checkIn.dismissedAt);
+	const isOwner = $derived(checkIn.founderId === currentUserId);
+	const isEditable = $derived(
+		isOwner &&
+			!isDismissed &&
+			Date.now() - new Date(checkIn.createdAt).getTime() < EDIT_WINDOW_MS
+	);
 	let confirmOpen = $state(false);
+	let editOpen = $state(false);
+
+	const queryClient = useQueryClient();
+
+	type CheckInListItem = {
+		id: string;
+		progress: string;
+		blocked: string;
+		help: string | null;
+	};
+	type InfiniteCheckIns = {
+		pageParams: unknown[];
+		pages: { items: CheckInListItem[]; nextCursor?: number }[];
+	};
+	type EditorValues = { progress: string; blocked: string; help: string };
+
+	function listKeys() {
+		return [orpc.checkIns.listFeed.key(), orpc.checkIns.listByFounder.key()];
+	}
+
+	function patchLists(id: string, patch: Partial<CheckInListItem>) {
+		for (const queryKey of listKeys()) {
+			queryClient.setQueriesData<InfiniteCheckIns>({ queryKey }, (old) =>
+				old
+					? {
+							...old,
+							pages: old.pages.map((page) => ({
+								...page,
+								items: page.items.map((item) =>
+									item.id === id ? { ...item, ...patch } : item
+								),
+							})),
+						}
+					: old
+			);
+		}
+	}
+
+	function invalidateLists() {
+		for (const queryKey of listKeys()) {
+			queryClient.invalidateQueries({ queryKey });
+		}
+	}
+
+	const editMutation = createMutation(() => ({
+		...orpc.checkIns.update.mutationOptions(),
+		meta: { skipErrorToast: true },
+		onError: () => {
+			toast.error("Não deu pra salvar o check-in. Tenta de novo.");
+			invalidateLists();
+		},
+		onMutate: (input) => {
+			patchLists(input.id, {
+				blocked: input.blocked,
+				help: input.help ?? null,
+				progress: input.progress,
+			});
+		},
+	}));
+
+	function saveEdit(value: EditorValues) {
+		editOpen = false;
+		editMutation.mutate({
+			blocked: value.blocked,
+			help: value.help || undefined,
+			id: checkIn.id,
+			progress: value.progress,
+		});
+	}
+
+	let editor = $state<{ prime: (v: EditorValues) => void }>();
+
+	function startEditing() {
+		editor?.prime({
+			blocked: checkIn.blocked,
+			help: checkIn.help ?? "",
+			progress: checkIn.progress,
+		});
+		editOpen = true;
+	}
 </script>
 
 <motion.div
@@ -125,12 +220,21 @@
 			</div>
 		{/if}
 	</div>
-	{#if showAuthor && onDismissVote && !isDismissed}
+	{#if !isDismissed && ((isOwner && isEditable) || (!isOwner && showAuthor && onDismissVote))}
 		<div
 			class="mt-3 flex items-center justify-end gap-2 border-t border-border/60 pt-3"
 		>
-			{#if checkIn.founderId === currentUserId}
-				<span class="text-xs text-muted-foreground">Seu check-in</span>
+			{#if isOwner}
+				<span class="mr-auto text-xs text-muted-foreground">Seu check-in</span>
+				<button
+					aria-label="Editar check-in"
+					class="flex size-8 items-center justify-center rounded-md border border-border transition-colors hover:bg-accent"
+					onclick={startEditing}
+					title="Editar check-in"
+					type="button"
+				>
+					<PencilIcon class="size-3.5" />
+				</button>
 			{:else if checkIn.hasVoted}
 				<span class="flex items-center gap-1.5 text-xs text-muted-foreground">
 					<FlagIcon class="size-3.5" />
@@ -182,5 +286,14 @@
 				</AlertDialog.Root>
 			{/if}
 		</div>
+	{/if}
+
+	{#if isEditable}
+		<CheckInEditor
+			isSaving={editMutation.isPending}
+			onSave={saveEdit}
+			bind:this={editor}
+			bind:open={editOpen}
+		/>
 	{/if}
 </motion.div>

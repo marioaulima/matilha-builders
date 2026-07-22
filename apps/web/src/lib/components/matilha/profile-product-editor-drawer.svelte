@@ -28,9 +28,6 @@
 				<DrawerTitle>Editar produto</DrawerTitle>
 			</DrawerHeader>
 			<div class="px-4 pb-2">
-				<!-- Mount only while open so the form re-inits with the current
-				     product's values each time — createForm reads defaultValues
-				     once, so a persistent mount would keep the first product's data. -->
 				{#if open}
 					<ProfileProductEditor
 						{initialValues}

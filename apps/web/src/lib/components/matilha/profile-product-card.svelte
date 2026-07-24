@@ -18,7 +18,7 @@
 		ProductStatus,
 		ProfileProduct,
 	} from "./profile-product.types.js";
-	import ProfileProductEditor from "./profile-product-editor.svelte";
+	import ProfileProductEditorDrawer from "./profile-product-editor-drawer.svelte";
 
 	const statusLabels = {
 		building: "Construindo",
@@ -56,16 +56,12 @@
 		onUpdate: (id: string, value: ProductFormValues) => void | Promise<void>;
 	} = $props();
 
-	let editing = $state(false);
+	let editOpen = $state(false);
 	let confirmingDelete = $state(false);
 
 	function saveProduct(value: ProductFormValues) {
-		editing = false;
+		editOpen = false;
 		return onUpdate(product.id, value);
-	}
-
-	function cancelEdit() {
-		editing = false;
 	}
 
 	function cancelDelete() {
@@ -73,7 +69,7 @@
 	}
 
 	function startEditing() {
-		editing = true;
+		editOpen = true;
 	}
 
 	function requestDelete() {
@@ -95,8 +91,117 @@
 		layout: { duration: 0.2, ease: [0.77, 0, 0.175, 1] },
 	}}
 >
-	{#if editing}
-		<ProfileProductEditor
+	<ProductChip
+		product={{ ...product, imageUrl: previewImageUrl ?? product.imageUrl }}
+		showStatus={!isOwnProfile}
+		size="md"
+		variant="cover"
+	/>
+	{#if isOwnProfile}
+		<Field label="Status">
+			<Select
+				onValueChange={(value) => onStatusChange(product.id, value as ProductStatus)}
+				type="single"
+				value={product.status}
+			>
+				<SelectTrigger class="w-full text-xs" size="sm">
+					{statusLabels[product.status]}
+				</SelectTrigger>
+				<SelectContent>
+					<SelectItem label="Validando" value="validating"
+						>Validando</SelectItem
+					>
+					<SelectItem label="Construindo" value="building"
+						>Construindo</SelectItem
+					>
+					<SelectItem label="Lançado" value="launched">Lançado</SelectItem>
+				</SelectContent>
+			</Select>
+		</Field>
+
+		<AnimatePresence mode="wait">
+			{#if confirmingDelete}
+				<motion.div
+					animate={{ opacity: 1 }}
+					class="flex items-center gap-2"
+					exit={{ opacity: 0 }}
+					initial={{ opacity: 0 }}
+					key="confirm"
+					transition={{ duration: 0.15 }}
+				>
+					<Button
+						class="h-8"
+						disabled={isDeleting}
+						onclick={() => onDelete(product.id)}
+						size="sm"
+						variant="destructive"
+					>
+						{isDeleting ? "Excluindo..." : "Confirmar exclusão"}
+					</Button>
+					<button
+						class="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
+						onclick={cancelDelete}
+						type="button"
+					>
+						cancelar
+					</button>
+				</motion.div>
+			{:else}
+				<motion.div
+					animate={{ opacity: 1 }}
+					class="flex flex-wrap items-center gap-2"
+					exit={{ opacity: 0 }}
+					initial={{ opacity: 0 }}
+					key="actions"
+					transition={{ duration: 0.15 }}
+				>
+					<button
+						class="flex h-8 items-center gap-1.5 rounded-md border border-border px-2.5 text-xs transition-colors hover:bg-accent"
+						onclick={() => onFeature(product.id)}
+						title={isFeatured ? "Remover destaque" : "Destacar no board"}
+						type="button"
+						class:border-streak={isFeatured}
+						class:text-streak={isFeatured}
+					>
+						<StarIcon
+							class="size-3.5"
+							fill={isFeatured ? "currentColor" : "none"}
+						/>
+						{isFeatured ? "Produto destacado" : "Destacar produto"}
+					</button>
+					<div class="ml-auto flex items-center gap-2">
+						<ImageUploadButton
+							endpoint="productImageUploader"
+							iconOnly
+							input={{ productId: product.id }}
+							label="Trocar foto do produto"
+							onPreview={(url) => onImagePreview(product.id, url)}
+							onUploaded={onImageUploaded}
+						/>
+						<button
+							aria-label="Editar produto"
+							class="flex size-8 items-center justify-center rounded-md border border-border transition-colors hover:bg-accent"
+							onclick={startEditing}
+							title="Editar produto"
+							type="button"
+						>
+							<PencilIcon class="size-3.5" />
+						</button>
+						<button
+							aria-label="Excluir produto"
+							class="flex size-8 items-center justify-center rounded-md border border-border text-destructive transition-colors hover:bg-destructive/10"
+							onclick={requestDelete}
+							title="Excluir produto"
+							type="button"
+						>
+							<Trash2Icon class="size-3.5" />
+						</button>
+					</div>
+				</motion.div>
+			{/if}
+		</AnimatePresence>
+
+		<ProfileProductEditorDrawer
 			initialValues={{
 				icp: product.icp ?? "",
 				link: product.link ?? "",
@@ -104,120 +209,8 @@
 				painPoint: product.painPoint ?? "",
 				solution: product.solution ?? "",
 			}}
-			onCancel={cancelEdit}
-			onSubmit={saveProduct}
-			submitLabel="Salvar"
+			onSave={saveProduct}
+			bind:open={editOpen}
 		/>
-	{:else}
-		<ProductChip
-			product={{ ...product, imageUrl: previewImageUrl ?? product.imageUrl }}
-			showStatus={!isOwnProfile}
-			size="md"
-			variant="cover"
-		/>
-		{#if isOwnProfile}
-			<Field label="Status">
-				<Select
-					onValueChange={(value) => onStatusChange(product.id, value as ProductStatus)}
-					type="single"
-					value={product.status}
-				>
-					<SelectTrigger class="w-full text-xs" size="sm">
-						{statusLabels[product.status]}
-					</SelectTrigger>
-					<SelectContent>
-						<SelectItem label="Validando" value="validating"
-							>Validando</SelectItem
-						>
-						<SelectItem label="Construindo" value="building"
-							>Construindo</SelectItem
-						>
-						<SelectItem label="Lançado" value="launched">Lançado</SelectItem>
-					</SelectContent>
-				</Select>
-			</Field>
-
-			<AnimatePresence mode="wait">
-				{#if confirmingDelete}
-					<motion.div
-						animate={{ opacity: 1 }}
-						class="flex items-center gap-2"
-						exit={{ opacity: 0 }}
-						initial={{ opacity: 0 }}
-						key="confirm"
-						transition={{ duration: 0.15 }}
-					>
-						<Button
-							class="h-8"
-							disabled={isDeleting}
-							onclick={() => onDelete(product.id)}
-							size="sm"
-							variant="destructive"
-						>
-							{isDeleting ? "Excluindo..." : "Confirmar exclusão"}
-						</Button>
-						<button
-							class="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
-							onclick={cancelDelete}
-							type="button"
-						>
-							cancelar
-						</button>
-					</motion.div>
-				{:else}
-					<motion.div
-						animate={{ opacity: 1 }}
-						class="flex flex-wrap items-center gap-2"
-						exit={{ opacity: 0 }}
-						initial={{ opacity: 0 }}
-						key="actions"
-						transition={{ duration: 0.15 }}
-					>
-						<button
-							class="flex h-8 items-center gap-1.5 rounded-md border border-border px-2.5 text-xs transition-colors hover:bg-accent"
-							onclick={() => onFeature(product.id)}
-							title={isFeatured ? "Remover destaque" : "Destacar no board"}
-							type="button"
-							class:border-streak={isFeatured}
-							class:text-streak={isFeatured}
-						>
-							<StarIcon
-								class="size-3.5"
-								fill={isFeatured ? "currentColor" : "none"}
-							/>
-							{isFeatured ? "Produto destacado" : "Destacar produto"}
-						</button>
-						<div class="ml-auto flex items-center gap-2">
-							<ImageUploadButton
-								endpoint="productImageUploader"
-								iconOnly
-								input={{ productId: product.id }}
-								label="Trocar foto do produto"
-								onPreview={(url) => onImagePreview(product.id, url)}
-								onUploaded={onImageUploaded}
-							/>
-							<button
-								aria-label="Editar produto"
-								class="flex size-8 items-center justify-center rounded-md border border-border transition-colors hover:bg-accent"
-								onclick={startEditing}
-								title="Editar produto"
-								type="button"
-							>
-								<PencilIcon class="size-3.5" />
-							</button>
-							<button
-								aria-label="Excluir produto"
-								class="flex size-8 items-center justify-center rounded-md border border-border text-destructive transition-colors hover:bg-destructive/10"
-								onclick={requestDelete}
-								title="Excluir produto"
-								type="button"
-							>
-								<Trash2Icon class="size-3.5" />
-							</button>
-						</div>
-					</motion.div>
-				{/if}
-			</AnimatePresence>
-		{/if}
 	{/if}
 </motion.div>

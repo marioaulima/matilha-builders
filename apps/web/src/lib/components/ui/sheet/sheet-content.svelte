@@ -39,7 +39,9 @@
 		bind:ref
 		{...restProps}
 	>
-		{@render children?.()}
+		<div class="themed-scrollbar min-h-0 flex-1 overflow-y-auto">
+			{@render children?.()}
+		</div>
 		{#if showCloseButton}
 			<SheetPrimitive.Close data-slot="sheet-close">
 				{#snippet child({ props })}

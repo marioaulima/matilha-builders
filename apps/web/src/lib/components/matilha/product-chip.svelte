@@ -152,7 +152,9 @@
 			Ver mais sobre
 		</Drawer.Trigger>
 		<Drawer.Content class="mx-auto max-w-fit">
-			<div class="mx-auto w-full max-w-md">
+			<div
+				class="themed-scrollbar mx-auto min-h-0 w-full max-w-md flex-1 overflow-y-auto"
+			>
 				<Drawer.Header>
 					<Drawer.Title class="text-lg">{product.name}</Drawer.Title>
 					<Drawer.Description>
@@ -221,7 +223,9 @@
 						<span>{tagDisplayName}</span>
 					{/if}
 					{#if product.status}
-						<span class="flex shrink-0 items-center gap-1 text-muted-foreground">
+						<span
+							class="flex shrink-0 items-center gap-1 text-muted-foreground"
+						>
 							<span
 								class={cn("size-1.5 rounded-full", dotStyles[product.status])}
 							></span>

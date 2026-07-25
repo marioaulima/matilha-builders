@@ -112,6 +112,7 @@
 		>
 			{#snippet children(state: SubmitState)}
 				<Button
+					class="flex-1"
 					disabled={!state.canSubmit || state.isSubmitting}
 					size="sm"
 					type="submit"
@@ -121,7 +122,12 @@
 			{/snippet}
 		</form.Subscribe>
 		{#if onCancel}
-			<Button onclick={onCancel} size="sm" type="button" variant="outline"
+			<Button
+				class="flex-1"
+				onclick={onCancel}
+				size="sm"
+				type="button"
+				variant="outline"
 				>Cancelar</Button
 			>
 		{/if}

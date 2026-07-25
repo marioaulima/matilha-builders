@@ -166,7 +166,9 @@
 		{#if isOwnProfile}
 			<Drawer bind:open={showEditProfile}>
 				<DrawerContent>
-					<div class="mx-auto w-full max-w-md">
+					<div
+						class="themed-scrollbar mx-auto min-h-0 w-full max-w-md flex-1 overflow-y-auto"
+					>
 						<DrawerHeader>
 							<DrawerTitle>Editar perfil</DrawerTitle>
 						</DrawerHeader>

@@ -24,6 +24,7 @@ import {
 	currentStreakSql,
 	EDIT_WINDOW_MS,
 } from "../lib/streak";
+import { notifyCheckIn } from "../lib/whatsapp";
 
 function paginate<T>(items: T[], cursor: number) {
 	return {
@@ -48,13 +49,14 @@ function hasProductWithStatus(
 
 async function requireOwnedProduct(productId: string, founderId: string) {
 	const [row] = await db
-		.select({ founderId: product.founderId })
+		.select({ founderId: product.founderId, name: product.name })
 		.from(product)
 		.where(eq(product.id, productId))
 		.limit(1);
 	if (!row || row.founderId !== founderId) {
 		throw new ORPCError("NOT_FOUND");
 	}
+	return row.name;
 }
 
 async function requireEditableCheckIn(checkInId: string, founderId: string) {
@@ -170,8 +172,9 @@ export const matilhaRouter = {
 			)
 			.handler(async ({ input, context }) => {
 				const founderId = context.session.user.id;
+				let productName: string | null = null;
 				if (input.productId) {
-					await requireOwnedProduct(input.productId, founderId);
+					productName = await requireOwnedProduct(input.productId, founderId);
 				}
 				const [profile] = await db
 					.select({
@@ -198,6 +201,20 @@ export const matilhaRouter = {
 					.update(founder)
 					.set({ lastCheckInAt: now, streak: nextStreak })
 					.where(eq(founder.userId, founderId));
+
+				// Awaited rather than fire-and-forget: on serverless a floating
+				// promise dies when the response returns. The client mutation is
+				// optimistic, so this latency never reaches the founder. The catch
+				// is the safety net for a rejection notifyCheckIn didn't swallow.
+				await notifyCheckIn({
+					blocked: input.blocked,
+					founderName: context.session.user.name,
+					help: input.help,
+					productName,
+					progress: input.progress,
+					streak: nextStreak,
+				}).catch(() => undefined);
+
 				return { streak: nextStreak };
 			}),
 		dismissVote: protectedProcedure

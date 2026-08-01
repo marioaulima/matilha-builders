@@ -248,6 +248,9 @@ importers:
       '@matilha-builders/config':
         specifier: workspace:*
         version: link:../config
+      tsx:
+        specifier: ^4.22.5
+        version: 4.23.1
       typescript:
         specifier: 'catalog:'
         version: 6.0.3

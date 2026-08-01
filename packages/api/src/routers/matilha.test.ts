@@ -1,5 +1,5 @@
 import { createRouterClient } from "@orpc/server";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const { dbMock, insertValues, updateWhere } = vi.hoisted(() => {
 	interface SelectChain {
@@ -50,17 +50,26 @@ vi.mock("@matilha-builders/db", () => ({ db: dbMock }));
 
 import { matilhaRouter } from "./matilha";
 
+// The mocked founder last checked in on 2026-07-21, in the calendar week
+// starting Monday 2026-07-20 (São Paulo time), with a stored streak of 4.
+const client = createRouterClient(matilhaRouter, {
+	context: {
+		session: { user: { id: "founder-1" } },
+	} as never,
+});
+
 describe("checkIns.create", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+		vi.useFakeTimers();
 	});
 
-	it("accepts another check-in for the same product during the same week", async () => {
-		const client = createRouterClient(matilhaRouter, {
-			context: {
-				session: { user: { id: "founder-1" } },
-			} as never,
-		});
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
+	it("records another check-in during the same week without scoring again", async () => {
+		vi.setSystemTime(new Date("2026-07-23T12:00:00Z"));
 
 		await expect(
 			client.checkIns.create({
@@ -76,5 +85,17 @@ describe("checkIns.create", () => {
 			})
 		);
 		expect(updateWhere).toHaveBeenCalledOnce();
+	});
+
+	it("scores a point on the first check-in of the following week", async () => {
+		vi.setSystemTime(new Date("2026-07-29T12:00:00Z"));
+
+		await expect(
+			client.checkIns.create({
+				blocked: "Nothing",
+				productId: "product-1",
+				progress: "Shipped another iteration",
+			})
+		).resolves.toEqual({ streak: 5 });
 	});
 });

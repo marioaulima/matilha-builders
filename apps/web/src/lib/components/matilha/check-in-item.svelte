@@ -2,6 +2,7 @@
 	import { motion } from "@humanspeak/svelte-motion";
 	import FlagIcon from "@lucide/svelte/icons/flag";
 	import PencilIcon from "@lucide/svelte/icons/pencil";
+	import { EDIT_WINDOW_MS } from "@matilha-builders/api/lib/streak";
 	import { createMutation, useQueryClient } from "@tanstack/svelte-query";
 	import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
 	import { Button } from "$lib/components/ui/button/index.js";
@@ -50,10 +51,6 @@
 		onDismissVote?: (checkInId: string) => void;
 		isVoting?: boolean;
 	} = $props();
-
-	// A check-in stays editable through its own week and the next one — mirrors
-	// EDIT_WINDOW_MS on the server, which rejects edits past this window.
-	const EDIT_WINDOW_MS = 14 * 24 * 60 * 60 * 1000;
 
 	const isDismissed = $derived(!!checkIn.dismissedAt);
 	const isOwner = $derived(checkIn.founderId === currentUserId);

@@ -7,16 +7,7 @@ import {
 	product,
 } from "@matilha-builders/db/schema/matilha";
 import { ORPCError } from "@orpc/server";
-import {
-	and,
-	desc,
-	eq,
-	exists,
-	inArray,
-	isNotNull,
-	isNull,
-	max,
-} from "drizzle-orm";
+import { and, desc, eq, exists, inArray, isNull } from "drizzle-orm";
 import { z } from "zod";
 
 import { protectedProcedure } from "../index";
@@ -32,7 +23,6 @@ import {
 	computeNextStreak,
 	currentStreakSql,
 	EDIT_WINDOW_MS,
-	ONE_WEEK_MS,
 } from "../lib/streak";
 
 function paginate<T>(items: T[], cursor: number) {
@@ -89,7 +79,7 @@ async function requireEditableCheckIn(checkInId: string, founderId: string) {
 	if (Date.now() - row.createdAt.getTime() >= EDIT_WINDOW_MS) {
 		throw new ORPCError("BAD_REQUEST", {
 			message:
-				"A janela de edição desse check-in fechou. Só dá pra editar durante a semana dele e a seguinte.",
+				"A janela de edição desse check-in fechou. Só dá pra editar nos 14 dias seguintes ao post.",
 		});
 	}
 }
@@ -528,38 +518,11 @@ export const matilhaRouter = {
 			}),
 		mine: protectedProcedure.handler(async ({ context }) => {
 			const founderId = context.session.user.id;
-			const products = await db
+			return await db
 				.select()
 				.from(product)
 				.where(eq(product.founderId, founderId))
 				.orderBy(desc(product.createdAt));
-			const lastCheckIns = await db
-				.select({
-					lastAt: max(checkIn.createdAt),
-					productId: checkIn.productId,
-				})
-				.from(checkIn)
-				.where(
-					and(eq(checkIn.founderId, founderId), isNotNull(checkIn.productId))
-				)
-				.groupBy(checkIn.productId);
-			const lockStart = new Map(
-				lastCheckIns
-					.filter(
-						(row): row is { lastAt: Date; productId: string } =>
-							!!row.productId && !!row.lastAt
-					)
-					.map((row) => [row.productId, row.lastAt])
-			);
-			const now = Date.now();
-			return products.map((p) => {
-				const lastAt = lockStart.get(p.id);
-				const checkInLockedUntil =
-					lastAt && now - lastAt.getTime() < ONE_WEEK_MS
-						? new Date(lastAt.getTime() + ONE_WEEK_MS)
-						: null;
-				return { ...p, checkInLockedUntil };
-			});
 		}),
 		update: protectedProcedure
 			.input(

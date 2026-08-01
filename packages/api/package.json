@@ -10,6 +10,7 @@
     }
   },
   "scripts": {
+    "backfill:streaks": "tsx scripts/backfill-streaks.ts",
     "test": "vitest run"
   },
   "dependencies": {
@@ -26,6 +27,7 @@
   },
   "devDependencies": {
     "@matilha-builders/config": "workspace:*",
+    "tsx": "^4.22.5",
     "typescript": "catalog:",
     "vitest": "^4.1.10"
   }

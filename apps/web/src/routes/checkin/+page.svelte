@@ -236,6 +236,24 @@
 	}));
 
 	type SubmitState = Pick<typeof form.state, "canSubmit" | "isSubmitting">;
+
+	// With a single product there's nothing to pick, so fill the field as soon
+	// as the list loads instead of making the founder open the select. Plain
+	// `let` rather than `$state` on purpose: it's a memo to keep the effect from
+	// re-applying, not something the UI reads.
+	let autoSelectedProductId: string | null = null;
+	$effect(() => {
+		const products = productsQuery.data;
+		if (products?.length !== 1) {
+			return;
+		}
+		const [onlyProduct] = products;
+		if (!onlyProduct || autoSelectedProductId === onlyProduct.id) {
+			return;
+		}
+		autoSelectedProductId = onlyProduct.id;
+		form.setFieldValue("productId", onlyProduct.id);
+	});
 </script>
 
 {#if showSuccess}

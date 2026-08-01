@@ -72,6 +72,18 @@
 
 	const initial = $derived((product.name || "?").charAt(0).toUpperCase());
 
+	// Products carry whatever og:image their own site advertises, so a link can
+	// point at a URL that 404s. Tracking the failed URL (rather than a boolean)
+	// makes the fallback reset on its own when the product gets a new image.
+	let failedImageUrl = $state<string | null>(null);
+	const showInitial = $derived(
+		!product.imageUrl || failedImageUrl === product.imageUrl
+	);
+
+	function handleImageError() {
+		failedImageUrl = product.imageUrl ?? null;
+	}
+
 	const tagDisplayName = $derived(
 		product.name.length > 10 ? `${product.name.slice(0, 10)}…` : product.name
 	);
@@ -89,13 +101,7 @@
 </script>
 
 {#snippet thumb()}
-	{#if product.imageUrl}
-		<img
-			alt="Imagem do produto {product.name}"
-			class={cn("shrink-0 object-cover ring-1 ring-border", dims, radius)}
-			src={product.imageUrl}
-		>
-	{:else}
+	{#if showInitial}
 		<span
 			class={cn(
 				"flex shrink-0 items-center justify-center bg-muted font-semibold text-muted-foreground ring-1 ring-border",
@@ -106,6 +112,14 @@
 		>
 			{initial}
 		</span>
+	{:else}
+		<!-- biome-ignore lint/a11y/noNoninteractiveElementInteractions: onerror is a load-failure event, not a user interaction -->
+		<img
+			alt="Imagem do produto {product.name}"
+			class={cn("shrink-0 object-cover ring-1 ring-border", dims, radius)}
+			onerror={handleImageError}
+			src={product.imageUrl}
+		>
 	{/if}
 {/snippet}
 
@@ -251,18 +265,20 @@
 		<div
 			class={cn("w-full overflow-hidden rounded-xl bg-muted ring-1 ring-border", coverHeight)}
 		>
-			{#if product.imageUrl}
-				<img
-					alt="Imagem do produto {product.name}"
-					class="h-full w-full object-cover"
-					src={product.imageUrl}
-				>
-			{:else}
+			{#if showInitial}
 				<div
 					class="flex h-full w-full items-center justify-center font-bold text-3xl text-muted-foreground"
 				>
 					{initial}
 				</div>
+			{:else}
+				<!-- biome-ignore lint/a11y/noNoninteractiveElementInteractions: onerror is a load-failure event, not a user interaction -->
+				<img
+					alt="Imagem do produto {product.name}"
+					class="h-full w-full object-cover"
+					onerror={handleImageError}
+					src={product.imageUrl}
+				>
 			{/if}
 		</div>
 		{@render caption()}

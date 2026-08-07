@@ -50,6 +50,13 @@
       "when": 1784513075973,
       "tag": "0006_check_in_dismissal_votes",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1786108632897,
+      "tag": "0007_typical_hammerhead",
+      "breakpoints": true
     }
   ]
 }

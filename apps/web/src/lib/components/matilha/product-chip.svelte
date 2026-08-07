@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { motion } from "@humanspeak/svelte-motion";
 	import ExternalLinkIcon from "@lucide/svelte/icons/external-link";
+	import type { Snippet } from "svelte";
 	import {
 		Drawer,
 		DrawerClose,
@@ -18,6 +19,9 @@
 	} from "$lib/components/ui/tooltip/index.js";
 	import { getProductFaviconUrl } from "$lib/product-favicon.js";
 	import { cn } from "$lib/utils.js";
+	import ProductStatus, {
+		PRODUCT_STATUS_LABELS,
+	} from "./product-status.svelte";
 
 	type Status = "validating" | "building" | "launched";
 
@@ -37,7 +41,9 @@
 		variant = "cover",
 		size = "md",
 		showStatus = true,
-		showImage = true,
+		showImage = variant !== "tag",
+		showLink = true,
+		trailing,
 		class: className,
 	}: {
 		product: Product;
@@ -45,6 +51,9 @@
 		size?: "sm" | "md" | "lg";
 		showStatus?: boolean;
 		showImage?: boolean;
+		showLink?: boolean;
+		/** Replaces the status indicator at the end of the `tag` variant. */
+		trailing?: Snippet;
 		class?: string;
 	} = $props();
 
@@ -67,18 +76,6 @@
 	const coverHeight = $derived(
 		size === "lg" ? "h-56 xl:h-[254px]" : "h-50 xl:h-[230px]"
 	);
-
-	const statusLabels: Record<Status, string> = {
-		building: "construindo",
-		launched: "lançado",
-		validating: "validando",
-	};
-
-	const dotStyles: Record<Status, string> = {
-		building: "bg-status-building",
-		launched: "bg-status-launched",
-		validating: "bg-status-validating",
-	};
 
 	const initial = $derived((product.name || "?").charAt(0).toUpperCase());
 	const faviconUrl = $derived(getProductFaviconUrl(product.link));
@@ -167,14 +164,7 @@
 			>
 		{/if}
 		{#if product.status && showStatus}
-			<span
-				class="flex shrink-0 items-center gap-1.5 text-muted-foreground text-xs"
-			>
-				<span
-					class={cn("size-1.5 rounded-full", dotStyles[product.status])}
-				></span>
-				{statusLabels[product.status]}
-			</span>
+			<ProductStatus class="text-xs" status={product.status} />
 		{/if}
 	</div>
 {/snippet}
@@ -195,7 +185,7 @@
 					<DrawerTitle class="text-lg">{product.name}</DrawerTitle>
 					<DrawerDescription>
 						{#if product.status}
-							{statusLabels[product.status]}
+							{PRODUCT_STATUS_LABELS[product.status]}
 						{/if}
 					</DrawerDescription>
 				</DrawerHeader>
@@ -243,7 +233,7 @@
 					{#if showImage}
 						{@render thumb()}
 					{/if}
-					{#if product.link}
+					{#if product.link && showLink}
 						<a
 							class="min-w-0 truncate underline decoration-muted-foreground/40 underline-offset-2 transition-colors hover:text-streak hover:decoration-streak"
 							href={product.link}
@@ -256,15 +246,10 @@
 					{:else}
 						<span class="truncate">{product.name}</span>
 					{/if}
-					{#if product.status && showStatus}
-						<span
-							class="flex shrink-0 items-center gap-1 text-muted-foreground"
-						>
-							<span
-								class={cn("size-1.5 rounded-full", dotStyles[product.status])}
-							></span>
-							{statusLabels[product.status]}
-						</span>
+					{#if trailing}
+						{@render trailing()}
+					{:else if product.status && showStatus}
+						<ProductStatus status={product.status} />
 					{/if}
 				</span>
 			{/snippet}
